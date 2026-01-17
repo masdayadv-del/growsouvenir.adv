@@ -582,11 +582,26 @@
         },
         get cartTotal(){ return this.cart.reduce((acc, item) => acc + (item.qty * item.sellPrice), 0); },
 
-        daysLeft(e){ if(!e)return null; const t=new Date;t.setHours(0,0,0,0); const a=new Date(e),n=Math.ceil((a-t)/864e5); 
-            if(n<0)return{text:'TERLEWAT',class:'bg-red-500 animate-pulse-slow'}; 
-            if(0===n)return{text:'HARI INI',class:'bg-orange-500 animate-bounce-slow'}; 
-            if(n<=3)return{text:`H-${n}`,class:'bg-amber-400'}; 
-            if(n<=7)return{text:`H-${n}`,class:'bg-blue-400'};
+        daysLeft(e){ 
+            if(!e)return null; 
+            
+            // 1. Ambil Waktu Hari Ini (Jam dinolkan)
+            const t = new Date();
+            t.setHours(0,0,0,0); 
+            
+            // 2. Ambil Waktu Deadline
+            const a = new Date(e);
+            // FIX: Paksa deadline jadi jam 00:00 lokal juga, agar tidak ada sisa jam
+            if(a.getHours() !== 0) a.setHours(0,0,0,0); 
+            
+            // 3. Hitung Selisih Hari
+            const n = Math.ceil((a - t) / 864e5); 
+            
+            if(n < 0) return {text:'TERLEWAT', class:'bg-red-500 animate-pulse-slow'}; 
+            if(0 === n) return {text:'HARI INI', class:'bg-orange-500 animate-bounce-slow'}; 
+            if(1 === n) return {text:'BESOK', class:'bg-brand-500'}; // Tambahan biar lebih natural
+            if(n <= 3) return {text:`H-${n}`, class:'bg-amber-400'}; 
+            if(n <= 7) return {text:`H-${n}`, class:'bg-blue-400'};
             return null; 
         },
 
@@ -652,4 +667,5 @@
 </body>
 
 </html>
+
 
