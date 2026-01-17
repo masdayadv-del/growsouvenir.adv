@@ -553,19 +553,40 @@
             try { const response = await fetch(url, { method: 'POST', redirect: "follow", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(bodyData) }); const data = await response.json(); if(data && data.success === false && data.message.includes("Token")) { this.notify("Akses Ditolak: Token API Salah", 'error'); return null; } return data; } catch (error) { console.error("API Error:", error); this.notify("Koneksi Gagal/Timeout", 'error'); return null; }
         },
 
-        async fetch(isInitial = false){
-            if(isInitial) { this.initialLoading = true; this.loadingData = true; }
+       async fetch(isInitial = false){
+            if(isInitial) { 
+                // Cek apakah ada data tersimpan di HP?
+                const cached = localStorage.getItem('grow_data_cache');
+                if(cached){
+                    const c = JSON.parse(cached);
+                    // Langsung tampilkan data lama (Instan!)
+                    this.applyData(c);
+                    this.initialLoading = false; 
+                } else {
+                    this.initialLoading = true;
+                }
+            }
+            
+            // Download data baru di background
             const e = await this.api('getInitialData');
             if(e) { 
-                this.allProducts=e.products || []; 
-                this.categories=[...new Set(this.allProducts.map(p=>p.category))]; 
-                this.history=e.history || []; 
-                this.expenses=e.expenses || []; 
-                this.deposits=e.deposits || []; // Added
-                this.modalStats=e.modalStats || {modalGantung:0, totalHPP:0, totalDisetor:0}; 
-                this.stats=e.stats || {omzet:0,grossProfit:0,netProfit:0,totalExpense:0,totalHPP:0}; 
-                this.initialLoading=false; this.loadingData=false; 
-            } else { this.initialLoading=false; this.loadingData=false; }
+                this.applyData(e);
+                // Simpan data baru ke HP
+                localStorage.setItem('grow_data_cache', JSON.stringify(e));
+                this.initialLoading = false; 
+                this.loadingData = false; 
+            }
+        },
+
+        // Pindahkan logika mapping data ke fungsi terpisah agar rapi
+        applyData(e){
+            this.allProducts=e.products || []; 
+            this.categories=[...new Set(this.allProducts.map(p=>p.category))]; 
+            this.history=e.history || []; 
+            this.expenses=e.expenses || []; 
+            this.deposits=e.deposits || [];
+            this.modalStats=e.modalStats || {modalGantung:0, totalHPP:0, totalDisetor:0}; 
+            this.stats=e.stats || {omzet:0,grossProfit:0,netProfit:0,totalExpense:0,totalHPP:0}; 
         },
 
         get filteredProducts(){ 
@@ -616,16 +637,28 @@
         async save(){
             this.vibrate();
             if(this.cart.length === 0) return this.notify("Keranjang Kosong", 'error');
-            this.bgProcess=true;
-            const res = await this.api('saveTransaction', { id:this.form.id, customer:this.form.customer, items: this.cart, dp:this.form.dp, deadline:this.form.deadline });
-            this.bgProcess=false;
+            
+            // 1. SIMPAN DATA SEMENTARA (Snapshot)
+            const payload = { id:this.form.id, customer:this.form.customer, items: this.cart, dp:this.form.dp, deadline:this.form.deadline };
+            
+            // 2. OPTIMISTIC UI: Anggap Sukses Duluan!
+            this.notify("Memproses Transaksi..."); // Notif kuning/info
+            this.resetForm(); 
+            this.cart = []; 
+            localStorage.removeItem('grow_cart_backup'); 
+            this.tab='home'; // Langsung pindah tab
+            
+            // 3. KIRIM KE SERVER DI BACKGROUND
+            const res = await this.api('saveTransaction', payload);
+            
+            // 4. CEK HASIL ASLINYA
             if(res && res.success){ 
-                this.notify("Transaksi Tersimpan!"); 
-                this.resetForm(); 
-                this.cart = []; localStorage.removeItem('grow_cart_backup'); 
-                this.tab='home'; 
-                this.fetch(); 
-            } else { this.notify("Gagal: " + (res?.message || "Server Error"), 'error'); }
+                this.notify("Data Tersimpan di Server!", "success"); // Update notif jadi hijau
+                this.fetch(); // Ambil data terbaru untuk update omzet
+            } else { 
+                this.notify("GAGAL SIMPAN! Cek Koneksi", 'error');
+                // Di sini idealnya Anda mengembalikan data ke form (Restore) jika gagal
+            }
         },
 
         async submitExpense(){
@@ -667,5 +700,6 @@
 </body>
 
 </html>
+
 
 
