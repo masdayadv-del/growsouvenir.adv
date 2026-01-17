@@ -537,7 +537,7 @@
         loginForm: { u: '', p: '' },
         isLogoutOpen: false, isDetailOpen: false, loadingDetail: false, selectedDetail: null, detailItems: [],
         
-        tab:'home', initialLoading:true, bgProcess:false, loadingPdf:false, notifications:[], isMasterOpen:false, isSetorOpen:false, isDeleteOpen:false, deleteId:null, isOffline: false, loadingData: true,
+        tab:'home', initialLoading:true, bgProcess:false, loading:false, loadingPdf:false, notifications:[], isMasterOpen:false, isSetorOpen:false, isDeleteOpen:false, deleteId:null, isOffline: false, loadingData: true,
         allProducts:[], categories:[], history:[], expenses:[], deposits:[], // Added deposits
         stats:{omzet:0,grossProfit:0,netProfit:0,totalExpense:0,totalHPP:0}, modalStats:{modalGantung:0, totalHPP:0, totalDisetor:0}, 
         filterDate:'', isService:false, selectedCategory:"", filterStatus:'', productSearch: '', showProductList: false,
@@ -601,6 +601,9 @@
         },
 
        async fetch(isInitial = false){
+            // 1. NYALAKAN ANIMASI (Agar tombol reload berputar)
+            this.loading = true; 
+
             if(isInitial) { 
                 // Cek apakah ada data tersimpan di HP?
                 const cached = localStorage.getItem('grow_data_cache');
@@ -613,6 +616,21 @@
                     this.initialLoading = true;
                 }
             }
+            
+            // Download data baru di background
+            const e = await this.api('getInitialData');
+            
+            if(e) { 
+                this.applyData(e);
+                // Simpan data baru ke HP
+                localStorage.setItem('grow_data_cache', JSON.stringify(e));
+                this.initialLoading = false; 
+                this.loadingData = false; 
+            }
+
+            // 2. MATIKAN ANIMASI (Data selesai diambil, stop putaran)
+            this.loading = false; 
+        },
             
             // Download data baru di background
             const e = await this.api('getInitialData');
@@ -747,6 +765,7 @@
 </body>
 
 </html>
+
 
 
 
