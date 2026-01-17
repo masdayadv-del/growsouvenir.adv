@@ -548,22 +548,34 @@
         startApp(interval) { fetch(`${API_URL}?action=ping`, { mode: 'no-cors' }); this.fetch(true).then(() => { if(interval) clearInterval(interval); }); },
         vibrate() { if (navigator.vibrate) navigator.vibrate(15); },
 
-        async login(){
-            if(!this.pin) return this.notify("Masukkan Password", 'error');
+        async login() {
+            if(!this.loginForm.u || !this.loginForm.p) return this.notify("Isi Username & Password!", 'error');
             
             this.bgProcess = true;
             
-            const res = await this.api('login', { pin: this.pin });
-            
-            if(res && res.success){
-                this.currentUser = res.user;
-                this.pin = '';
-                localStorage.setItem('grow_user_session', JSON.stringify(res.user));
-                this.fetch(true);
-                this.isLoggedIn = true;
-            } else {
-                this.notify("Password Salah / User Tidak Ditemukan", 'error');
-                this.bgProcess = false;
+            try {
+                const response = await fetch(`${API_URL}?action=login`, { 
+                    method: 'POST', 
+                    redirect: "follow", 
+                    headers: {"Content-Type": "text/plain;charset=utf-8"}, 
+                    body: JSON.stringify({ username: this.loginForm.u, password: this.loginForm.p }) 
+                });
+                
+                const res = await response.json();
+                
+                if (res.success) { 
+                    this.currentUser = res.user; 
+                    localStorage.setItem('grow_user', JSON.stringify(res.user)); 
+                    this.loginForm = { u: '', p: '' }; 
+                    this.initialLoading = true; 
+                    this.startApp(); 
+                } else { 
+                    this.notify(res.message, 'error'); 
+                    this.bgProcess = false; 
+                }
+            } catch (e) { 
+                this.notify("Gagal Login: Server Error", 'error'); 
+                this.bgProcess = false; 
             }
         },
         logout() { this.isLogoutOpen = false; localStorage.removeItem('grow_user'); this.currentUser = null; this.tab = 'home'; },
@@ -722,6 +734,7 @@
 </body>
 
 </html>
+
 
 
 
