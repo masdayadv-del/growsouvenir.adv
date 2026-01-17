@@ -155,10 +155,7 @@
               <p class="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-2"><span class="w-1.5 h-1.5 bg-brand-500 rounded-full"></span> Ringkasan</p>
               <div class="flex items-center gap-2">
                   <p class="text-[9px] font-bold text-slate-400" x-text="dateString"></p>
-                  <button 
-    @click="fetch(true); vibrate()" 
-    class="p-1.5 rounded-full bg-white border border-slate-100 shadow-sm active:scale-90 transition-transform group">
-    
+                  <button @click="fetch(true); vibrate()"class="p-1.5 rounded-full bg-white border border-slate-100 shadow-sm active:scale-90 transition-transform group">
     <svg 
         :class="loading ? 'animate-spin text-brand-600' : 'text-slate-400 group-hover:text-brand-600'"
         class="w-3.5 h-3.5 transition-colors" 
@@ -765,6 +762,7 @@
 </body>
 
 </html>
+
 
 
 
