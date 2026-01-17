@@ -3,8 +3,8 @@
   "short_name": "Grow App",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F8FAFC",
-  "theme_color": "#ffffff",
+  "background_color": "#FFFFFF",
+  "theme_color": "#eff6ff",
   "orientation": "portrait",
   "icons": [
     {
@@ -19,4 +19,5 @@
     }
   ]
 }
+
 
