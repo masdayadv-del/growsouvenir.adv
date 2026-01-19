@@ -5,7 +5,7 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#F8FAFC",
+  "background_color": "#FFFFFF",
   "theme_color": "#F8FAFC",
   "orientation": "portrait",
   "categories": [
@@ -27,3 +27,4 @@
     }
   ]
 }
+
