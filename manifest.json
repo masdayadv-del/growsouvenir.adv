@@ -6,7 +6,7 @@
   "scope": "./",
   "display": "standalone",
   "background_color": "#FFFFFF",
-  "theme_color": "#F8FAFC",
+  "theme_color": "#FFFFFF",
   "orientation": "portrait",
   "categories": [
     "business",
@@ -25,6 +25,7 @@
     }
   ]
 }
+
 
 
 
