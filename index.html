@@ -12,9 +12,11 @@
     <link rel="apple-touch-icon" href="/icon-192.png">
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#eff6ff">
+    <meta name="theme-color" content="#3b82f6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Grow App">
+    <meta name="mobile-web-app-capable" content="yes">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
@@ -41,18 +43,44 @@
         }
     </script>
     <style>
+        /* Hide scrollbar globally for all browsers */
+        html,
+        body {
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari, Opera */
+        }
+
         body {
             background-color: #F8FAFC;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
+            overflow-x: hidden;
+            /* Prevent horizontal scroll */
         }
 
         [x-cloak] {
             display: none !important
         }
 
+        /* Hide scrollbar for elements with .no-scrollbar class */
+        .no-scrollbar {
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
         .no-scrollbar::-webkit-scrollbar {
-            display: none
+            display: none;
+            /* Chrome, Safari, Opera */
         }
 
         input[type=number]::-webkit-inner-spin-button,
@@ -421,7 +449,7 @@
                                             x-text="fmt(t.hpp)"></span></p>
                                 </div>
 
-                                <p class="text-xs font-black text-slate-700 whitespace-nowrap" x-text="fmt(t.total)">
+                                <p class="text-xs font-black text-brand-600 whitespace-nowrap" x-text="fmt(t.total)">
                                 </p>
                             </div>
                         </template>
@@ -431,27 +459,85 @@
                 </div>
             </div>
 
-            <div x-show="tab === 'list'" class="max-w-md mx-auto fade-in h-full flex flex-col overflow-y-auto">
+            <div x-show="tab === 'list'"
+                class="max-w-md mx-auto fade-in h-full flex flex-col overflow-y-auto no-scrollbar">
 
                 <div class="sticky top-0 z-20 pb-2 pt-1 bg-[#F8FAFC]">
                     <!-- Title -->
                     <h3 class="font-extrabold text-sm text-slate-800 px-2 pt-2 mb-2 pb-2">
                         RIWAYAT TRANSAKSI</h3>
 
-                    <!-- Date Filter (Moved to Top) -->
-                    <div
-                        class="px-2 mb-2 flex justify-between items-center bg-white border border-slate-100 rounded-xl p-2 shadow-sm">
-                        <span
-                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Search Bar -->
+                    <div class="px-2 mb-2">
+                        <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+                            <div class="relative">
+                                <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <input type="text" x-model="searchQuery" placeholder="Cari customer, produk, atau ID..."
+                                    class="w-full bg-slate-50 border-0 rounded-lg pl-10 pr-4 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-brand-400 transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div class="px-2 mb-2 bg-white border border-slate-100 rounded-xl p-3 shadow-sm">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                 </path>
                             </svg>
-                            Filter Tanggal
-                        </span>
-                        <input type="date" x-model="filterDate"
-                            class="bg-slate-50 border-0 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-600 outline-none focus:ring-1 focus:ring-brand-500">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Filter
+                                Periode</span>
+                        </div>
+
+                        <!-- Quick Filters -->
+                        <div class="flex gap-1.5 mb-2 overflow-x-auto no-scrollbar pb-1">
+                            <button @click="setQuickFilter('all'); vibrate()"
+                                :class="quickFilter === 'all' ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Semua
+                            </button>
+                            <button @click="setQuickFilter('today'); vibrate()"
+                                :class="quickFilter === 'today' ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Hari Ini
+                            </button>
+                            <button @click="setQuickFilter('week'); vibrate()"
+                                :class="quickFilter === 'week' ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Minggu Ini
+                            </button>
+                            <button @click="setQuickFilter('month'); vibrate()"
+                                :class="quickFilter === 'month' ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Bulan Ini
+                            </button>
+                            <button @click="setQuickFilter('custom'); vibrate()"
+                                :class="quickFilter === 'custom' ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Custom
+                            </button>
+                        </div>
+
+                        <!-- Date Range Inputs (Show when custom) -->
+                        <div x-show="quickFilter === 'custom'" x-collapse
+                            class="flex gap-2 pt-1 border-t border-slate-100">
+                            <div class="flex-1">
+                                <label class="text-[8px] font-bold text-slate-400 mb-1 block">Dari</label>
+                                <input type="date" x-model="filterStartDate"
+                                    class="w-full bg-slate-50 border-0 rounded-lg px-2 py-1.5 text-[9px] font-bold text-slate-600 outline-none focus:ring-1 focus:ring-brand-400">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[8px] font-bold text-slate-400 mb-1 block">Sampai</label>
+                                <input type="date" x-model="filterEndDate"
+                                    class="w-full bg-slate-50 border-0 rounded-lg px-2 py-1.5 text-[9px] font-bold text-slate-600 outline-none focus:ring-1 focus:ring-brand-400">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="flex gap-2 mb-2 overflow-x-auto no-scrollbar pt-1 px-1">
@@ -656,7 +742,7 @@
                                     @click.away="showProductList=false" placeholder="Cari produk..."
                                     class="w-full bg-white border-0 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 shadow-sm">
                                 <div x-show="showProductList && productSearch && filteredProducts.length > 0"
-                                    class="absolute top-full left-0 w-full mt-1 bg-white rounded-xl shadow-xl border border-slate-100 max-h-40 overflow-y-auto z-50 p-1">
+                                    class="absolute top-full left-0 w-full mt-1 bg-white rounded-xl shadow-xl border border-slate-100 max-h-40 overflow-y-auto no-scrollbar z-50 p-1">
                                     <template x-for="p in filteredProducts" :key="p.name">
                                         <div @click="form.productName = '['+p.category+'] '+p.name; productSearch = p.name; showProductList = false; vibrate()"
                                             class="px-3 py-2 hover:bg-brand-50 rounded-lg cursor-pointer transition">
@@ -740,7 +826,10 @@
 
             <div x-show="tab === 'expense'" class="space-y-5 max-w-md mx-auto fade-in">
                 <div class="bg-white rounded-[2.5rem] border border-slate-50 shadow-soft p-6">
-                    <h2 class="text-sm font-bold text-slate-800 uppercase mb-4 tracking-wide text-center">Catat Biaya
+                    <h2
+                        class="text-sm font-bold text-slate-800 uppercase mb-4 tracking-wide text-center flex items-center justify-center gap-2">
+                        <span x-show="expForm.id" class="w-1.5 h-1.5 bg-rose-600 rounded-full"></span>
+                        <span x-text="expForm.id ? 'Edit Biaya' : 'Catat Biaya'"></span>
                     </h2>
                     <form @submit.prevent="submitExpense">
                         <div class="space-y-3"><select x-model="expForm.category"
@@ -759,42 +848,131 @@
                                     type="number" x-model="expForm.amount"
                                     class="w-full bg-slate-50 border-0 rounded-2xl pl-8 pr-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500"
                                     placeholder="Nominal"></div>
-                        </div><button type="submit" :disabled="bgProcess"
-                            class="w-full mt-5 bg-rose-600 text-white font-bold py-3.5 rounded-2xl text-xs shadow-lg active:scale-95 flex justify-center gap-2"><span
-                                x-show="bgProcess"
-                                class="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full"></span><span
-                                x-text="bgProcess ? 'MENYIMPAN...' : 'SIMPAN'"></span></button>
+                            <div class="flex gap-3 mt-5">
+                                <button x-show="expForm.id" type="button" @click="resetExpForm(); vibrate()"
+                                    class="flex-1 bg-slate-100 text-slate-500 font-bold py-3.5 rounded-2xl text-xs active:scale-95 transition">BATAL</button>
+                                <button type="submit" :disabled="bgProcess"
+                                    class="flex-1 bg-rose-600 text-white font-bold py-3.5 rounded-2xl text-xs shadow-lg active:scale-95 flex justify-center gap-2">
+                                    <span x-show="bgProcess"
+                                        class="animate-spin w-3 h-3 border-2 border-white/30 border-t-white rounded-full"></span>
+                                    <span
+                                        x-text="bgProcess ? 'MENYIMPAN...' : (expForm.id ? 'UPDATE' : 'SIMPAN')"></span>
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
-                <div
-                    class="glass-card px-4 py-3 rounded-2xl flex justify-between items-center shadow-soft border border-rose-100/50 bg-rose-50/50">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-rose-500 shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                            </svg>
+
+                <!-- Total Keluar & Filter Tanggal -->
+                <div class="bg-white rounded-[2rem] border border-slate-50 shadow-soft p-5">
+                    <!-- Total Expense Display -->
+                    <div class="mb-4 pb-4 border-b border-slate-100">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Keluar</p>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                </svg>
+                            </div>
+                            <span class="text-lg font-black text-rose-600 tracking-tight"
+                                x-text="fmt(filteredExpenseTotal)"></span>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Total Keluar</span>
                     </div>
-                    <span class="text-lg font-black text-rose-600 tracking-tight"
-                        x-text="fmt(stats.totalExpense)"></span>
+
+                    <!-- Filter Section -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Filter
+                                Periode</span>
+                        </div>
+
+                        <!-- Quick Filters -->
+                        <div class="flex gap-1.5 mb-3 overflow-x-auto no-scrollbar pb-1">
+                            <button @click="setExpenseQuickFilter('all'); vibrate()"
+                                :class="expQuickFilter === 'all' ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Semua
+                            </button>
+                            <button @click="setExpenseQuickFilter('today'); vibrate()"
+                                :class="expQuickFilter === 'today' ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Hari Ini
+                            </button>
+                            <button @click="setExpenseQuickFilter('week'); vibrate()"
+                                :class="expQuickFilter === 'week' ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Minggu Ini
+                            </button>
+                            <button @click="setExpenseQuickFilter('month'); vibrate()"
+                                :class="expQuickFilter === 'month' ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Bulan Ini
+                            </button>
+
+                            <button @click="setExpenseQuickFilter('custom'); vibrate()"
+                                :class="expQuickFilter === 'custom' ? 'bg-rose-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                                class="px-2.5 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition active:scale-95">
+                                Custom
+                            </button>
+                        </div>
+
+                        <!-- Date Range Inputs (Show when custom) -->
+                        <div x-show="expQuickFilter === 'custom'" x-collapse
+                            class="flex gap-2 pt-2 border-t border-slate-100">
+                            <div class="flex-1">
+                                <label class="text-[8px] font-bold text-slate-400 mb-1 block">Dari</label>
+                                <input type="date" x-model="expFilterStart"
+                                    class="w-full bg-slate-50 border-0 rounded-lg px-2 py-1.5 text-[9px] font-bold text-slate-600 outline-none focus:ring-1 focus:ring-rose-400">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[8px] font-bold text-slate-400 mb-1 block">Sampai</label>
+                                <input type="date" x-model="expFilterEnd"
+                                    class="w-full bg-slate-50 border-0 rounded-lg px-2 py-1.5 text-[9px] font-bold text-slate-600 outline-none focus:ring-1 focus:ring-rose-400">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="space-y-3 pb-4">
-                    <template x-for="ex in expenses" :key="ex.id">
+                <div class="space-y-3 pb-24">
+                    <template x-for="ex in filteredExpenses" :key="ex.id">
                         <div
-                            class="bg-white p-3 rounded-2xl border border-slate-50 shadow-soft flex justify-between items-center">
-                            <div>
-                                <p class="text-xs font-bold text-slate-800" x-text="ex.desc"></p>
-                                <div class="flex gap-2 mt-0.5"><span class="text-[9px] text-slate-400"
-                                        x-text="ex.date"></span><span
-                                        class="text-[8px] font-bold bg-slate-100 text-slate-500 px-1.5 rounded"
-                                        x-text="ex.cat"></span></div>
+                            class="bg-white p-3 rounded-2xl border border-slate-50 shadow-soft relative active:scale-[0.99] transition">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800" x-text="ex.desc"></p>
+                                    <div class="flex gap-2 mt-0.5"><span class="text-[9px] text-slate-400"
+                                            x-text="ex.date"></span><span
+                                            class="text-[8px] font-bold bg-slate-100 text-slate-500 px-1.5 rounded"
+                                            x-text="ex.cat"></span></div>
+                                </div>
+                                <p class="text-xs font-black text-rose-500" x-text="fmt(ex.amount)"></p>
                             </div>
-                            <p class="text-xs font-black text-rose-500" x-text="fmt(ex.amount)"></p>
+                            <div class="flex justify-end gap-2 border-t border-slate-50 pt-2 mt-2">
+                                <button @click="editExpense(ex); vibrate()"
+                                    class="flex items-center px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-bold active:bg-blue-100 hover:bg-blue-100 transition"><svg
+                                        class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                        </path>
+                                    </svg>Edit</button>
+                                <template x-if="currentUser.role === 'Admin'">
+                                    <button @click="requestDeleteExpense(ex.id); vibrate()"
+                                        class="flex items-center px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-[9px] font-bold active:bg-rose-100 hover:bg-rose-100 transition"><svg
+                                            class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                            </path>
+                                        </svg>Hapus</button>
+                                </template>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -998,15 +1176,68 @@
 
             <div class="text-left pt-2">
                 <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Riwayat Setor (Terakhir)</p>
-                <div class="space-y-2">
-                    <template x-for="d in deposits" :key="d.date">
-                        <div
-                            class="flex justify-between items-center p-2 bg-slate-50 rounded-lg border border-slate-100">
-                            <div>
-                                <p class="text-[9px] font-bold text-slate-700" x-text="d.note"></p>
-                                <p class="text-[8px] text-slate-400" x-text="d.date"></p>
+                <div class="space-y-2" x-data="{ expandedDeposit: null }">
+                    <template x-for="(d, idx) in deposits" :key="d.date + idx">
+                        <div class="bg-slate-50 rounded-lg border border-slate-100 overflow-hidden">
+                            <!-- Header (Always Visible) -->
+                            <div @click="expandedDeposit = expandedDeposit === idx ? null : idx"
+                                class="flex justify-between items-center p-2 cursor-pointer hover:bg-slate-100 transition active:scale-[0.99]">
+                                <div class="flex-1">
+                                    <p class="text-[9px] font-bold text-slate-700" x-text="d.note"></p>
+                                    <p class="text-[8px] text-slate-400" x-text="d.date"></p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-[10px] font-black text-brand-600" x-text="fmt(d.amount)"></p>
+                                    <svg class="w-3 h-3 text-slate-400 transition-transform"
+                                        :class="{ 'rotate-180': expandedDeposit === idx }" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
                             </div>
-                            <p class="text-[10px] font-black text-brand-600" x-text="fmt(d.amount)"></p>
+
+                            <!-- Detail (Expandable) -->
+                            <div x-show="expandedDeposit === idx" x-collapse
+                                class="px-3 pb-3 pt-1 border-t border-slate-200 bg-white">
+                                <div class="space-y-2">
+                                    <!-- Nominal Detail -->
+                                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                        <span class="text-[8px] text-slate-500 uppercase font-bold">Nominal
+                                            Disetor</span>
+                                        <span class="text-[9px] font-black text-brand-600"
+                                            x-text="fmt(d.amount)"></span>
+                                    </div>
+
+                                    <!-- Bank/Tujuan -->
+                                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100"
+                                        x-show="d.bank">
+                                        <span class="text-[8px] text-slate-500 uppercase font-bold">Bank Tujuan</span>
+                                        <span class="text-[9px] font-bold text-slate-700" x-text="d.bank || '-'"></span>
+                                    </div>
+
+                                    <!-- Waktu Lengkap -->
+                                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                        <span class="text-[8px] text-slate-500 uppercase font-bold">Waktu</span>
+                                        <span class="text-[9px] font-bold text-slate-700" x-text="d.date"></span>
+                                    </div>
+
+                                    <!-- Keterangan -->
+                                    <div class="py-1.5">
+                                        <p class="text-[8px] text-slate-500 uppercase font-bold mb-1">Keterangan</p>
+                                        <p class="text-[9px] text-slate-700 bg-slate-50 p-2 rounded" x-text="d.note">
+                                        </p>
+                                    </div>
+
+                                    <!-- Status Badge -->
+                                    <div class="pt-1">
+                                        <span
+                                            class="inline-block px-2 py-0.5 bg-green-50 text-green-600 border border-green-200 rounded text-[8px] font-bold">
+                                            ✓ TERCATAT
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </template>
                     <div x-show="deposits.length === 0" class="text-center text-[9px] text-slate-300 py-2">Belum ada
@@ -1076,7 +1307,7 @@
                                 <div class="pr-2">
                                     <p class="text-xs font-bold text-slate-800" x-text="item.productName"></p>
                                     <p class="text-[10px] text-slate-400"><span x-text="item.qty"></span> x <span
-                                            x-text="fmt(item.sellPrice)"></span></p>
+                                            class="text-brand-600 font-bold" x-text="fmt(item.sellPrice)"></span></p>
                                     <template x-if="currentUser.role === 'Admin'">
                                         <p class="text-[9px] text-slate-400 mt-0.5">HPP: <span
                                                 x-text="fmt(item.costPrice)"></span> • Laba: <span
@@ -1206,7 +1437,10 @@
                 modalStats: { modalGantung: 0, totalHPP: 0, totalDisetor: 0 },
                 historyKPI: { all: { count: 0, total: 0 }, lunas: { count: 0, total: 0 }, belum: { count: 0, total: 0 } },
                 filterDate: '', isService: false, selectedCategory: "", filterStatus: '', productSearch: '', showProductList: false,
-                form: { id: null, customer: '', productName: '', serviceName: '', qty: 1, sellPrice: '', costPrice: '', dp: 0, deadline: '' }, newProd: { category: '', name: '' }, setorForm: { amount: '', note: '', bank: 'Mandiri' }, expForm: { category: '', desc: '', amount: '' },
+                searchQuery: '', filterStartDate: '', filterEndDate: '', quickFilter: '',
+
+                expFilterStart: '', expFilterEnd: '', expQuickFilter: '',
+                form: { id: null, customer: '', productName: '', serviceName: '', qty: 1, sellPrice: '', costPrice: '', dp: 0, deadline: '' }, newProd: { category: '', name: '' }, setorForm: { amount: '', note: '', bank: 'Mandiri' }, expForm: { id: null, category: '', desc: '', amount: '' }, deleteType: 'transaction',
                 cart: [], loadingText: 'MENGHUBUNGKAN...', loadingMessages: ['MENYAMBUNGKAN SERVER...', 'SINKRONISASI DATA...', 'MEMUAT DASHBOARD...', 'MENYIAPKAN TRANSAKSI...'], timeString: '', dateString: '',
 
                 init() {
@@ -1316,10 +1550,107 @@
                 },
                 get filteredHistory() {
                     return this.history.filter(e => {
-                        const matchDate = this.filterDate ? e.isoDate === this.filterDate : true;
+                        // Search filter (customer, product, or ID)
+                        const searchLower = this.searchQuery.toLowerCase();
+                        const matchSearch = !this.searchQuery ||
+                            e.customer.toLowerCase().includes(searchLower) ||
+                            e.product.toLowerCase().includes(searchLower) ||
+                            e.id.toLowerCase().includes(searchLower);
+
+                        // Date range filter
+                        let matchDate = true;
+                        if (this.filterStartDate && e.isoDate < this.filterStartDate) matchDate = false;
+                        if (this.filterEndDate && e.isoDate > this.filterEndDate) matchDate = false;
+
+                        // Status filter
                         const matchStatus = this.filterStatus ? e.status === this.filterStatus : true;
-                        return matchDate && matchStatus;
+
+                        return matchSearch && matchDate && matchStatus;
                     });
+                },
+                setQuickFilter(type) {
+                    this.quickFilter = type;
+                    const today = new Date();
+                    const formatDate = (d) => d.toISOString().split('T')[0];
+
+                    if (type === 'today') {
+                        this.filterStartDate = formatDate(today);
+                        this.filterEndDate = formatDate(today);
+                    } else if (type === 'week') {
+                        const weekStart = new Date(today);
+                        weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+                        this.filterStartDate = formatDate(weekStart);
+                        this.filterEndDate = formatDate(today);
+                    } else if (type === 'month') {
+                        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                        this.filterStartDate = formatDate(monthStart);
+                        this.filterEndDate = formatDate(today);
+                    } else if (type === 'all') {
+                        this.filterStartDate = '';
+                        this.filterEndDate = '';
+                    } else if (type === 'custom') {
+                        // Don't set dates, let user choose
+                    } else {
+                        // Clear filter
+                        this.filterStartDate = '';
+                        this.filterEndDate = '';
+                        this.quickFilter = '';
+                    }
+                },
+                setExpenseQuickFilter(type) {
+                    this.expQuickFilter = type;
+                    const today = new Date();
+                    const formatDate = (d) => d.toISOString().split('T')[0];
+
+                    if (type === 'today') {
+                        this.expFilterStart = formatDate(today);
+                        this.expFilterEnd = formatDate(today);
+                    } else if (type === 'week') {
+                        const weekStart = new Date(today);
+                        weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+                        this.expFilterStart = formatDate(weekStart);
+                        this.expFilterEnd = formatDate(today);
+                    } else if (type === 'month') {
+                        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                        this.expFilterStart = formatDate(monthStart);
+                        this.expFilterEnd = formatDate(today);
+                    } else if (type === 'all') {
+                        this.expFilterStart = '';
+                        this.expFilterEnd = '';
+                    } else if (type === 'custom') {
+                        // Let user choose
+                    }
+                },
+                get filteredExpenses() {
+                    return this.expenses.filter(e => {
+                        // Jika tidak ada filter, tampilkan semua
+                        if (!this.expFilterStart && !this.expFilterEnd) return true;
+
+                        // Jika expense tidak punya isoDate, tetap tampilkan (backward compatibility)
+                        if (!e.isoDate) return true;
+
+                        const expenseDate = e.isoDate; // Format: yyyy-MM-dd
+
+                        // Filter berdasarkan start date
+                        if (this.expFilterStart) {
+                            if (expenseDate < this.expFilterStart) return false;
+                        }
+
+                        // Filter berdasarkan end date
+                        if (this.expFilterEnd) {
+                            if (expenseDate > this.expFilterEnd) return false;
+                        }
+
+                        return true;
+                    });
+                },
+                get filteredExpenseTotal() {
+                    // Logic: Jika user sedang filter tanggal, hitung total dari yang tampil (filtered).
+                    // Jika tidak (default view), tampilkan "Total Keluar Bulan Ini" dari server (stats.totalExpense) agar sesuai UX sebelumnya.
+                    if (this.expFilterStart || this.expFilterEnd) {
+                        return this.filteredExpenses.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+                    }
+                    return this.stats.totalExpense;
                 },
                 get cartTotal() { return this.cart.reduce((acc, item) => acc + (item.qty * item.sellPrice), 0); },
 
@@ -1386,12 +1717,22 @@
                     const res = await this.api('saveExpense', this.expForm);
                     this.bgProcess = false;
                     if (res && res.success) {
-                        this.expForm = { category: '', desc: '', amount: '' };
+                        this.resetExpForm();
                         this.notify("Biaya Disimpan");
                         this.fetch();
                     } else {
                         this.notify(res ? res.message : "Gagal", 'error')
                     }
+                },
+                editExpense(ex) {
+                    this.expForm = { id: ex.id, category: ex.cat, desc: ex.desc, amount: ex.amount };
+                    // Scroll to top of expense tab
+                    const container = document.querySelector('main');
+                    if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.vibrate();
+                },
+                resetExpForm() {
+                    this.expForm = { id: null, category: '', desc: '', amount: '' };
                 },
 
                 async viewDetail(t) {
@@ -1407,8 +1748,35 @@
                     if (res && res.success) { this.cart = res.items; } else { this.notify("Gagal memuat: " + (res ? res.message : "Error"), "error"); }
                 },
 
-                requestDelete(id) { this.deleteId = id; this.isDeleteOpen = true; },
-                async confirmDelete() { this.isDeleteOpen = false; this.bgProcess = true; const res = await this.api('deleteTransaction', { id: this.deleteId }); this.bgProcess = false; if (res && res.success) { this.notify("Data Terhapus"); this.fetch(); } else { this.notify("Gagal Hapus", 'error'); } },
+                requestDelete(id) { this.deleteId = id; this.deleteType = 'transaction'; this.isDeleteOpen = true; },
+                requestDeleteExpense(id) { this.deleteId = id; this.deleteType = 'expense'; this.isDeleteOpen = true; },
+                async confirmDelete() {
+                    this.isDeleteOpen = false; this.bgProcess = true;
+                    const action = this.deleteType === 'transaction' ? 'deleteTransaction' : 'deleteTransaction'; // Wait, backend I added deleteExpense but I need to map it in backend API
+                    // Check backend Code.gs: 
+                    // if (action === 'deleteTransaction') { result = deleteTransaction(postData.id); isWrite = true; }
+                    // I need to update backend to handle 'deleteExpense' action?
+                    // Ah, looking at Code.gs earlier:
+                    /*
+                    else if (action === 'deleteTransaction') { result = deleteTransaction(postData.id); isWrite = true; }
+                    else if (action === 'saveExpense') { result = saveExpense(postData); isWrite = true; }
+                    */
+                    // I did NOT add 'deleteExpense' action handling in `handleRequest` in Code.gs!
+                    // I added the function `deleteExpense` but not the routing.
+                    // I will fix `Code.gs` in the next step. 
+                    // For now, let's assume I will name the action 'deleteExpense'.
+
+                    const apiAction = this.deleteType === 'expense' ? 'deleteExpense' : 'deleteTransaction';
+
+                    const res = await this.api(apiAction, { id: this.deleteId });
+                    this.bgProcess = false;
+                    if (res && res.success) {
+                        this.notify("Data Terhapus");
+                        this.fetch();
+                    } else {
+                        this.notify("Gagal Hapus", 'error');
+                    }
+                },
 
                 async printInvoice(t) {
                     this.loadingPdf = true;
