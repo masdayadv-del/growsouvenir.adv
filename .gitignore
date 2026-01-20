@@ -20,4 +20,9 @@ Code.gs
 *.tmp
 *.log
 
+# Images (ignore semua kecuali icons)
+*.jpg
 
+# Ignore all PNG EXCEPT icons
+*.png
+!icon-*.png
