@@ -711,7 +711,8 @@
                             <!-- Content / Skeleton -->
                             <div x-show="!loadingData">
                                 <h3 class="text-sm font-black mb-0.5" x-text="historyKPI.all.count"></h3>
-                                <p class="text-[9px] font-bold opacity-60 truncate" x-text="fmt(historyKPI.all.total)">
+                                <p class="text-[9px] font-bold opacity-60 truncate"
+                                    x-text="isSensitiveHidden ? 'Rp ****' : fmt(historyKPI.all.total)">
                                 </p>
                             </div>
                             <div x-show="loadingData" class="space-y-1">
