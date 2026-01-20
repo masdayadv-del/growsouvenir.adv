@@ -138,6 +138,30 @@
                 background-position: 1000px 0
             }
         }
+
+        /* ===== SAFE AREA INSETS FOR iPhone ===== */
+        /* Ensures content doesn't overlap with notch and home indicator */
+
+        /* Adjust body padding for safe areas */
+        body {
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* Header - add extra padding for notch */
+        header.glass-nav {
+            padding-top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
+        }
+
+        /* Login screen timer - push down from notch */
+        .login-timer {
+            top: calc(env(safe-area-inset-top, 0px) + 4rem) !important;
+        }
+
+        /* Bottom navigation - lift above home indicator */
+        nav.glass-nav {
+            bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+        }
     </style>
 
 </head>
@@ -147,7 +171,7 @@
 
     <div x-show="!currentUser" x-cloak
         class="fixed inset-0 z-[200] bg-slate-50 flex flex-col items-center justify-center p-6" x-transition.opacity>
-        <div class="absolute top-16 text-center">
+        <div class="absolute top-16 text-center login-timer">
             <p class="text-4xl font-black text-slate-200 tracking-tighter" x-text="timeString">00:00</p>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1" x-text="dateString">...</p>
         </div>
