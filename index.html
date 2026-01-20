@@ -64,6 +64,7 @@
             overscroll-behavior-y: none;
             overflow-x: hidden;
             /* Prevent horizontal scroll */
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         [x-cloak] {
@@ -142,20 +143,14 @@
         /* ===== SAFE AREA INSETS FOR iPhone ===== */
         /* Ensures content doesn't overlap with notch and home indicator */
 
-        /* Adjust body padding for safe areas */
-        body {
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-        /* Header - add extra padding for notch */
+        /* Header - add padding for notch (reduced from 1rem to 0.5rem) */
         header.glass-nav {
-            padding-top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
+            padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem) !important;
         }
 
-        /* Login screen timer - push down from notch */
+        /* Login screen timer - push down from notch (reduced from 4rem to 3rem) */
         .login-timer {
-            top: calc(env(safe-area-inset-top, 0px) + 4rem) !important;
+            top: calc(env(safe-area-inset-top, 0px) + 3rem) !important;
         }
 
         /* Bottom navigation - lift above home indicator */
@@ -743,7 +738,7 @@
                             <div x-show="!loadingData">
                                 <h3 class="text-sm font-black mb-0.5" x-text="historyKPI.lunas.count"></h3>
                                 <p class="text-[9px] font-bold opacity-60 truncate"
-                                    x-text="fmt(historyKPI.lunas.total)">
+                                    x-text="isSensitiveHidden ? 'Rp ****' : fmt(historyKPI.lunas.total)">
                                 </p>
                             </div>
                             <div x-show="loadingData" class="space-y-1">
@@ -770,7 +765,7 @@
                             <div x-show="!loadingData">
                                 <h3 class="text-sm font-black mb-0.5" x-text="historyKPI.belum.count"></h3>
                                 <p class="text-[9px] font-bold opacity-60 truncate"
-                                    x-text="fmt(historyKPI.belum.total)">
+                                    x-text="isSensitiveHidden ? 'Rp ****' : fmt(historyKPI.belum.total)">
                                 </p>
                             </div>
                             <div x-show="loadingData" class="space-y-1">
@@ -1050,7 +1045,8 @@
                         <!-- Total -->
                         <div class="bg-rose-50 rounded-xl p-2 text-center">
                             <p class="text-[8px] font-bold text-rose-400 uppercase">Total</p>
-                            <p class="text-xs font-black text-rose-600 truncate" x-text="fmt(expenseKPIs.total)"></p>
+                            <p class="text-xs font-black text-rose-600 truncate"
+                                x-text="isSensitiveHidden ? 'Rp *******' : fmt(expenseKPIs.total)"></p>
                         </div>
                         <!-- Frequency -->
                         <div class="bg-slate-50 rounded-xl p-2 text-center">
@@ -1136,7 +1132,8 @@
                                             class="text-[8px] font-bold bg-slate-100 text-slate-500 px-1.5 rounded"
                                             x-text="ex.cat"></span></div>
                                 </div>
-                                <p class="text-xs font-black text-rose-500" x-text="fmt(ex.amount)"></p>
+                                <p class="text-xs font-black text-rose-500"
+                                    x-text="isSensitiveHidden ? 'Rp *******' : fmt(ex.amount)"></p>
                             </div>
                             <div class="flex justify-end gap-2 border-t border-slate-50 pt-2 mt-2">
                                 <button @click="editExpense(ex); vibrate()"
@@ -1202,8 +1199,8 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-4">
-                    <button @click="printMonthly"
-                        class="glass-card p-6 rounded-[2rem] shadow-soft relative overflow-hidden group active:scale-95 transition">
+                    <button @click="printMonthly" :disabled="loadingPdf"
+                        class="glass-card p-6 rounded-[2rem] shadow-soft relative overflow-hidden group active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-blue-50 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition duration-500">
                         </div>
@@ -1211,14 +1208,24 @@
                             <div class="text-left">
                                 <div
                                     class="w-10 h-10 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mb-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg x-show="!loadingPdf" class="w-5 h-5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                         </path>
                                     </svg>
+                                    <svg x-show="loadingPdf" class="w-5 h-5 animate-spin" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
                                 </div>
                                 <p class="text-lg font-black text-slate-800">Laporan Bulanan</p>
-                                <p class="text-[10px] text-slate-500 font-medium">Rekap transaksi & laba rugi</p>
+                                <p class="text-[10px] text-slate-500 font-medium"
+                                    x-text="loadingPdf ? 'Generating PDF...' : 'Rekap transaksi & laba rugi'"></p>
                             </div>
                             <div
                                 class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition">
@@ -1230,8 +1237,8 @@
                         </div>
                     </button>
 
-                    <button @click="printExpenseReport"
-                        class="glass-card p-6 rounded-[2rem] shadow-soft relative overflow-hidden group active:scale-95 transition">
+                    <button @click="printExpenseReport" :disabled="loadingPdf"
+                        class="glass-card p-6 rounded-[2rem] shadow-soft relative overflow-hidden group active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-rose-50 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition duration-500">
                         </div>
@@ -1239,13 +1246,23 @@
                             <div class="text-left">
                                 <div
                                     class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg x-show="!loadingPdf" class="w-5 h-5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
+                                    <svg x-show="loadingPdf" class="w-5 h-5 animate-spin" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
                                 </div>
                                 <p class="text-lg font-black text-slate-800">Laporan Pengeluaran</p>
-                                <p class="text-[10px] text-slate-500 font-medium">Detail biaya operasional</p>
+                                <p class="text-[10px] text-slate-500 font-medium"
+                                    x-text="loadingPdf ? 'Generating PDF...' : 'Detail biaya operasional'"></p>
                             </div>
                             <div
                                 class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:text-rose-600 transition">
@@ -1257,8 +1274,8 @@
                         </div>
                     </button>
 
-                    <button @click="printAnnual"
-                        class="glass-card p-6 rounded-[2rem] shadow-soft relative overflow-hidden group active:scale-95 transition">
+                    <button @click="printAnnual" :disabled="loadingPdf"
+                        class="glass-card p-6 rounded-[2rem] shadow-soft relative overflow-hidden group active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-amber-50 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition duration-500">
                         </div>
@@ -1266,13 +1283,23 @@
                             <div class="text-left">
                                 <div
                                     class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mb-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg x-show="!loadingPdf" class="w-5 h-5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
+                                    <svg x-show="loadingPdf" class="w-5 h-5 animate-spin" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
                                 </div>
                                 <p class="text-lg font-black text-slate-800">Laporan Tahunan</p>
-                                <p class="text-[10px] text-slate-500 font-medium">Performa satu tahun penuh</p>
+                                <p class="text-[10px] text-slate-500 font-medium"
+                                    x-text="loadingPdf ? 'Generating PDF...' : 'Performa satu tahun penuh'"></p>
                             </div>
                             <div
                                 class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:text-amber-600 transition">
@@ -1388,7 +1415,7 @@
                     </path>
                 </svg></button>
             <button
-                @click="currentUser?.role === 'Admin' ? (tab='report', vibrate()) : (notify('Anda tidak memiliki akses!', 'error'), vibrate())"
+                @click="(currentUser?.role === 'Admin' || currentUser?.role === 'Owner') ? (tab='report', vibrate()) : (notify('Anda tidak memiliki akses!', 'error'), vibrate())"
                 class="p-2 rounded-full transition duration-300"
                 :class="tab==='report'?'text-amber-500 bg-amber-50':'text-slate-400 hover:text-slate-600'"><svg
                     class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1728,7 +1755,7 @@
     <script>
         // === KONFIGURASI API ===
         // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT GOOGLE SCRIPT ANDA YANG BARU
-        const API_URL = "https://script.google.com/macros/s/AKfycbz6xLcmaMA5wKTxdWF6s9QR5PJxzu2o7YgmSbtQHoHv2_qbR0N7LC7Lr7JHvfLnPc5vPg/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbz9faI5IerS5gVP51ffP1qmSfqU6FJI6xcc6cQg7gXhDcAjbeyZuhyYEX2P0bkfGMZpTg/exec";
         const API_TOKEN = "GROW_SECURE_2026";
 
         function app() {
@@ -2112,6 +2139,30 @@
                     }
                     return this.stats.totalExpense;
                 },
+                get expenseKPIs() {
+                    const filtered = this.filteredExpenses;
+                    const total = filtered.reduce((acc, e) => acc + (parseFloat(e.amount) || 0), 0);
+                    const count = filtered.length;
+
+                    // Hitung kategori terboros
+                    const catMap = {};
+                    filtered.forEach(e => {
+                        const cat = e.cat || 'Lainnya';
+                        if (!catMap[cat]) catMap[cat] = 0;
+                        catMap[cat] += parseFloat(e.amount) || 0;
+                    });
+
+                    let topCat = '-';
+                    let maxAmount = 0;
+                    for (const cat in catMap) {
+                        if (catMap[cat] > maxAmount) {
+                            maxAmount = catMap[cat];
+                            topCat = cat;
+                        }
+                    }
+
+                    return { total, count, topCat };
+                },
                 get cartTotal() { return this.cart.reduce((acc, item) => acc + (item.qty * item.sellPrice), 0); },
 
                 daysLeft(e) {
@@ -2172,7 +2223,17 @@
                 },
 
                 async submitExpense() {
-                    if (!this.expForm.amount || this.expForm.amount <= 0) return this.notify("Nominal Salah", 'error');
+                    // Enhanced validations
+                    if (!this.expForm.category || this.expForm.category.trim() === '') {
+                        return this.notify("Pilih Kategori", 'error');
+                    }
+                    if (!this.expForm.desc || this.expForm.desc.trim() === '') {
+                        return this.notify("Keterangan wajib diisi", 'error');
+                    }
+                    if (!this.expForm.amount || this.expForm.amount <= 0) {
+                        return this.notify("Nominal harus lebih dari 0", 'error');
+                    }
+
                     this.bgProcess = true;
                     const res = await this.api('saveExpense', this.expForm);
                     this.bgProcess = false;
