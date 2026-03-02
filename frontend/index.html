@@ -341,98 +341,102 @@
         </div>
 
         <!-- WELCOME MODAL -->
-        <div x-show="showWelcome" x-transition.opacity
-            class="fixed inset-0 z-[150] bg-black/50 backdrop-blur-sm flex items-center justify-center p-6">
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center relative overflow-hidden"
-                @click.outside="showWelcome = false">
-                <div class="absolute inset-0 bg-gradient-to-br from-brand-50 to-transparent"></div>
-                <div class="relative z-10">
-                    <div
-                        class="w-24 h-24 mx-auto mb-4 rounded-full p-1 bg-gradient-to-tr from-brand-400 to-brand-600 shadow-lg">
-                        <img loading="lazy"
-                            :src="currentUser?.photo || `https://ui-avatars.com/api/?name=${currentUser?.name}&background=random`"
-                            class="w-full h-full rounded-full object-cover border-4 border-white">
+        <template x-if="showWelcome">
+            <div x-transition.opacity
+                class="fixed inset-0 z-[150] bg-black/50 backdrop-blur-sm flex items-center justify-center p-6">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center relative overflow-hidden"
+                    @click.outside="showWelcome = false">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-50 to-transparent"></div>
+                    <div class="relative z-10">
+                        <div
+                            class="w-24 h-24 mx-auto mb-4 rounded-full p-1 bg-gradient-to-tr from-brand-400 to-brand-600 shadow-lg">
+                            <img loading="lazy"
+                                :src="currentUser?.photo || `https://ui-avatars.com/api/?name=${currentUser?.name}&background=random`"
+                                class="w-full h-full rounded-full object-cover border-4 border-white">
+                        </div>
+                        <h2 class="text-2xl font-black text-slate-800 mb-1 animate-pulse">Selamat Datang!</h2>
+                        <p class="text-sm font-bold text-brand-600 uppercase tracking-widest mb-6"
+                            x-text="currentUser?.role + ' ' + (currentUser?.name?.split(' ')[0]||'')"></p>
+                        <button @click="showWelcome = false"
+                            class="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg shadow-brand-500/30">Mulai
+                            Bekerja</button>
                     </div>
-                    <h2 class="text-2xl font-black text-slate-800 mb-1 animate-pulse">Selamat Datang!</h2>
-                    <p class="text-sm font-bold text-brand-600 uppercase tracking-widest mb-6"
-                        x-text="currentUser?.role + ' ' + (currentUser?.name?.split(' ')[0]||'')"></p>
-                    <button @click="showWelcome = false"
-                        class="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-700 transition shadow-lg shadow-brand-500/30">Mulai
-                        Bekerja</button>
                 </div>
             </div>
-        </div>
+        </template>
 
         <!-- USER FORM MODAL -->
-        <div x-show="isUserModalOpen" x-cloak
-            class="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative"
-                @click.outside="isUserModalOpen = false">
-                <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
-                    <span class="w-1.5 h-6 bg-brand-500 rounded-full"></span>
-                    <span x-text="currUserForm?.isEdit ? 'Edit Karyawan' : 'Tambah Karyawan'"></span>
-                </h3>
+        <template x-if="isUserModalOpen">
+            <div x-cloak
+                class="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+                <div class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative"
+                    @click.outside="isUserModalOpen = false">
+                    <h3 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-brand-500 rounded-full"></span>
+                        <span x-text="currUserForm?.isEdit ? 'Edit Karyawan' : 'Tambah Karyawan'"></span>
+                    </h3>
 
-                <form @submit.prevent="saveUserSubmit" class="space-y-4">
-                    <!-- Photo Upload -->
-                    <div class="flex justify-center mb-4">
-                        <div class="relative group cursor-pointer w-20 h-20" @click="$refs.photoInput.click()">
-                            <img loading="lazy"
-                                :src="currUserForm.photo || `https://ui-avatars.com/api/?name=${currUserForm.name||'User'}&background=random`"
-                                class="w-full h-full rounded-full object-cover border-2 border-slate-200 group-hover:border-brand-500 transition">
-                            <div
-                                class="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-[9px] font-bold uppercase">
-                                Ubah Foto</div>
+                    <form @submit.prevent="saveUserSubmit" class="space-y-4">
+                        <!-- Photo Upload -->
+                        <div class="flex justify-center mb-4">
+                            <div class="relative group cursor-pointer w-20 h-20" @click="$refs.photoInput.click()">
+                                <img loading="lazy"
+                                    :src="currUserForm.photo || `https://ui-avatars.com/api/?name=${currUserForm.name||'User'}&background=random`"
+                                    class="w-full h-full rounded-full object-cover border-2 border-slate-200 group-hover:border-brand-500 transition">
+                                <div
+                                    class="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-[9px] font-bold uppercase">
+                                    Ubah Foto</div>
+                            </div>
+                            <input type="file" x-ref="photoInput" class="hidden" accept="image/*"
+                                @change="handlePhotoUpload">
                         </div>
-                        <input type="file" x-ref="photoInput" class="hidden" accept="image/*"
-                            @change="handlePhotoUpload">
-                    </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Username</label>
+                                <input type="text" x-model="currUserForm.username" :disabled="currUserForm.isEdit"
+                                    class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
+                                    required minlength="3">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Password</label>
+                                <input type="text" x-model="currUserForm.password"
+                                    class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
+                                    :required="!currUserForm.isEdit" :minlength="currUserForm.isEdit ? 0 : 4"
+                                    :placeholder="currUserForm.isEdit ? 'Kosongkan jika tetap' : 'Password'">
+                            </div>
+                        </div>
+
                         <div>
-                            <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Username</label>
-                            <input type="text" x-model="currUserForm.username" :disabled="currUserForm.isEdit"
-                                class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
-                                required minlength="3">
+                            <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Role</label>
+                            <div class="grid grid-cols-3 gap-2 mt-1">
+                                <template x-for="r in ['Owner', 'Admin', 'Kasir']" :key="r">
+                                    <button type="button" @click="currUserForm.role = r"
+                                        :class="currUserForm.role === r ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'"
+                                        class="py-2 rounded-xl text-[10px] font-bold transition" x-text="r"></button>
+                                </template>
+                            </div>
                         </div>
+
                         <div>
-                            <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Password</label>
-                            <input type="text" x-model="currUserForm.password"
+                            <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Nama Lengkap</label>
+                            <input type="text" x-model="currUserForm.name"
                                 class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
-                                :required="!currUserForm.isEdit" :minlength="currUserForm.isEdit ? 0 : 4"
-                                :placeholder="currUserForm.isEdit ? 'Kosongkan jika tetap' : 'Password'">
+                                required minlength="2">
                         </div>
-                    </div>
 
-                    <div>
-                        <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Role</label>
-                        <div class="grid grid-cols-3 gap-2 mt-1">
-                            <template x-for="r in ['Owner', 'Admin', 'Kasir']" :key="r">
-                                <button type="button" @click="currUserForm.role = r"
-                                    :class="currUserForm.role === r ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'"
-                                    class="py-2 rounded-xl text-[10px] font-bold transition" x-text="r"></button>
-                            </template>
+                        <div class="pt-4 flex gap-3">
+                            <button type="button" @click="isUserModalOpen = false"
+                                class="flex-1 py-3.5 rounded-xl bg-slate-100 text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button>
+                            <button type="submit" :disabled="bgProcess"
+                                class="flex-1 py-3.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition flex items-center justify-center gap-2">
+                                <span x-text="bgProcess ? 'Menyimpan...' : 'Simpan'"></span>
+                            </button>
                         </div>
-                    </div>
-
-                    <div>
-                        <label class="text-[9px] font-bold text-slate-400 uppercase ml-1">Nama Lengkap</label>
-                        <input type="text" x-model="currUserForm.name"
-                            class="w-full bg-slate-50 border-0 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
-                            required minlength="2">
-                    </div>
-
-                    <div class="pt-4 flex gap-3">
-                        <button type="button" @click="isUserModalOpen = false"
-                            class="flex-1 py-3.5 rounded-xl bg-slate-100 text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button>
-                        <button type="submit" :disabled="bgProcess"
-                            class="flex-1 py-3.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition flex items-center justify-center gap-2">
-                            <span x-text="bgProcess ? 'Menyimpan...' : 'Simpan'"></span>
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
+        </template>
 
         <!-- Main Content (Pull to Refresh triggers Linebar) -->
         <main class="flex-1 overflow-y-auto no-scrollbar p-5 pb-36 relative"
@@ -616,7 +620,7 @@
                                         <p class="text-[9px] font-bold uppercase text-slate-400" x-text="t.customer">
                                         </p>
                                         <p class="text-[8px] text-slate-300 mt-1">Modal: <span
-                                                x-text="isSensitiveHidden ? 'Rp ****' : fmt(t.hpp)"></span></p>
+                                                x-text="isSensitiveHidden ? 'Rp ****' : fmt(t.totalModal)"></span></p>
                                     </div>
                                     <div class="text-right">
                                         <p class="font-black text-xs text-brand-600"
@@ -900,7 +904,7 @@
                                     <use href="#i-pencil-alt" />
                                 </svg>
                             </div>
-                            <span>MODE EDIT MENYALA</span>
+                            <span>MODE EDIT</span>
                         </div>
                         <div id="transactionForm" class="flex gap-2 mb-2">
                             <input type="text" x-model="form.customer" list="customerList"
@@ -967,7 +971,7 @@
                                     type="tel" :value="formatRupiah(form.costPrice)"
                                     @input="form.costPrice = cleanRupiah($el.value); $el.value = formatRupiah($el.value)"
                                     class="w-full bg-white border-0 rounded-xl pl-8 pr-3 py-3 text-right text-xs font-bold outline-none focus:ring-2 focus:ring-slate-400 text-slate-500 shadow-sm"
-                                    placeholder="Harga Modal"></div>
+                                    placeholder="HPP Barang"></div>
                         </div>
                         <button @click="addToCart(); vibrate()"
                             class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-xs active:scale-95 transition shadow-lg shadow-slate-500/20 hover:bg-slate-800">TAMBAH
@@ -984,7 +988,7 @@
                                             <span x-text="isSensitiveHidden ? 'Rp ****' : fmt(item.sellPrice)"></span>
                                         </p>
                                         <p class="text-[9px] text-rose-400 mt-0.5" x-show="item.costPrice > 0">
-                                            Modal: <span
+                                            HPP Barang: <span
                                                 x-text="isSensitiveHidden ? 'Rp ****' : fmt(item.costPrice)"></span>
                                         </p>
                                         <p class="text-[9px] text-amber-500 mt-0.5" x-show="item.transportFee > 0">
@@ -1106,7 +1110,7 @@
 
             <template x-if="tab === 'monitor'">
                 <div class="space-y-5 max-w-md mx-auto fade-in">
-                    <div class="px-1 pt-1 bg-[#F8FAFC] sticky top-0 z-10 pb-2">
+                    <div class="px-1 pt-1 sticky top-0 z-10 pb-2">
                         <h2 class="text-sm font-bold text-slate-800 uppercase mb-2 ml-2 flex items-center gap-2">
                             <span class="w-1.5 h-4 bg-cyan-500 rounded-full"></span> Monitoring System
                         </h2>
@@ -1536,7 +1540,7 @@
 
             <template x-if="tab === 'report'">
                 <div class="space-y-5 max-w-md mx-auto fade-in">
-                    <div class="sticky top-0 z-10 pb-2 bg-[#F8FAFC]">
+                    <div class="sticky top-0 z-10 pb-2">
                         <h2 class="text-sm font-bold text-slate-800 uppercase mb-2 ml-2 flex items-center gap-2">
                             <span class="w-1.5 h-4 bg-amber-500 rounded-full"></span>
                             Pusat Laporan
@@ -1669,7 +1673,7 @@
             <!-- TAB TEAM (OWNER ONLY) -->
             <template x-if="tab === 'team'">
                 <div class="space-y-5 max-w-md mx-auto fade-in">
-                    <div class="sticky top-0 z-10 pb-2 bg-[#F8FAFC]">
+                    <div class="sticky top-0 z-10 pb-2">
                         <div class="flex justify-between items-center px-1">
                             <h2 class="text-sm font-bold text-slate-800 uppercase ml-2 flex items-center gap-2">
                                 <span class="w-1.5 h-4 bg-brand-500 rounded-full"></span> Kelola Tim
@@ -1765,7 +1769,7 @@
             <!-- TAB: USER LOG -->
             <template x-if="tab === 'userLog'">
                 <div class="space-y-5 max-w-md mx-auto fade-in">
-                    <div class="px-1 pt-1 bg-[#F8FAFC] sticky top-0 z-10">
+                    <div class="px-1 pt-1 sticky top-0 z-10">
                         <h2 class="text-sm font-bold text-slate-800 uppercase mb-2 ml-2 flex items-center gap-2">
                             <span class="w-1.5 h-4 bg-indigo-500 rounded-full"></span> Aktivitas Tim
                         </h2>
@@ -2000,61 +2004,65 @@
                     </div>
 
                     <!-- Log Detail Modal -->
-                    <div x-show="isLogDetailOpen"
-                        class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6"
-                        x-transition.opacity x-cloak>
-                        <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl relative"
-                            @click.away="closeLogDetail()">
-                            <button @click="closeLogDetail()"
-                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-600 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <use href="#i-x-close" />
-                                </svg>
-                            </button>
+                    <template x-if="isLogDetailOpen">
+                        <div class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6"
+                            x-transition.opacity>
+                            <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl relative"
+                                @click.away="closeLogDetail()">
+                                <button @click="closeLogDetail()"
+                                    class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-600 transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <use href="#i-x-close" />
+                                    </svg>
+                                </button>
 
-                            <h3 class="font-extrabold text-slate-800 text-lg mb-4 flex items-center gap-2">
-                                <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span> Detail Aktivitas
-                            </h3>
+                                <h3 class="font-extrabold text-slate-800 text-lg mb-4 flex items-center gap-2">
+                                    <span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span> Detail Aktivitas
+                                </h3>
 
-                            <template x-if="selectedLog">
-                                <div class="space-y-4">
-                                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                        <div class="grid grid-cols-2 gap-4 text-xs">
-                                            <div>
-                                                <p class="text-[10px] text-slate-400 font-bold uppercase">Tanggal
-                                                    Transaksi
-                                                </p>
-                                                <p class="font-bold text-slate-800" x-text="selectedLog.timestamp"></p>
+                                <template x-if="selectedLog">
+                                    <div class="space-y-4">
+                                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                            <div class="grid grid-cols-2 gap-4 text-xs">
+                                                <div>
+                                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Tanggal
+                                                        Transaksi
+                                                    </p>
+                                                    <p class="font-bold text-slate-800" x-text="selectedLog.timestamp">
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Aktor</p>
+                                                    <p class="font-bold text-slate-800" x-text="selectedLog.user"></p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Aksi</p>
+                                                    <span
+                                                        class="inline-block px-2 py-0.5 rounded bg-white border border-slate-200 font-bold text-[10px]"
+                                                        x-text="selectedLog.action"></span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Target ID
+                                                    </p>
+                                                    <p class="font-mono text-[10px] text-slate-600 truncate"
+                                                        x-text="selectedLog.targetId || '-'"></p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p class="text-[10px] text-slate-400 font-bold uppercase">Aktor</p>
-                                                <p class="font-bold text-slate-800" x-text="selectedLog.user"></p>
-                                            </div>
-                                            <div>
-                                                <p class="text-[10px] text-slate-400 font-bold uppercase">Aksi</p>
-                                                <span
-                                                    class="inline-block px-2 py-0.5 rounded bg-white border border-slate-200 font-bold text-[10px]"
-                                                    x-text="selectedLog.action"></span>
-                                            </div>
-                                            <div>
-                                                <p class="text-[10px] text-slate-400 font-bold uppercase">Target ID</p>
-                                                <p class="font-mono text-[10px] text-slate-600 truncate"
-                                                    x-text="selectedLog.targetId || '-'"></p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">Rincian Data
+                                            </p>
+                                            <div class="bg-slate-900 rounded-2xl p-4 overflow-x-auto custom-scrollbar">
+                                                <pre class="text-[10px] text-emerald-400 font-mono"
+                                                    x-text="JSON.stringify(selectedLog.parsedDetails, null, 2)"></pre>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <p class="text-[10px] text-slate-400 font-bold uppercase mb-2">Rincian Data</p>
-                                        <div class="bg-slate-900 rounded-2xl p-4 overflow-x-auto custom-scrollbar">
-                                            <pre class="text-[10px] text-emerald-400 font-mono"
-                                                x-text="JSON.stringify(selectedLog.parsedDetails, null, 2)"></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
                         </div>
-                    </div>
+                    </template>
 
                 </div>
             </template>
@@ -2133,73 +2141,546 @@
     </template>
 
     <!-- Expense Detail Modal -->
-    <div x-show="isExpenseDetailOpen"
-        class="fixed inset-0 z-[95] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6"
-        x-transition.opacity x-cloak>
-        <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl relative"
-            @click.away="isExpenseDetailOpen = false">
-            <button @click="isExpenseDetailOpen = false"
-                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-600 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <use href="#i-x-close" />
-                </svg>
-            </button>
+    <template x-if="isExpenseDetailOpen">
+        <div class="fixed inset-0 z-[95] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6"
+            x-transition.opacity>
+            <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl relative"
+                @click.away="isExpenseDetailOpen = false">
+                <button @click="isExpenseDetailOpen = false"
+                    class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-600 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#i-x-close" />
+                    </svg>
+                </button>
 
-            <h3 class="font-extrabold text-slate-800 text-lg mb-6 flex items-center gap-2">
-                <span class="w-1.5 h-6 bg-red-500 rounded-full"></span> Detail Pengeluaran
-            </h3>
+                <h3 class="font-extrabold text-slate-800 text-lg mb-6 flex items-center gap-2">
+                    <span class="w-1.5 h-6 bg-red-500 rounded-full"></span> Detail Pengeluaran
+                </h3>
 
-            <template x-if="selectedExpense">
-                <div class="space-y-6">
-                    <!-- Amount Highlight -->
-                    <div class="text-center">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nominal</p>
-                        <p class="text-3xl font-black text-rose-500"
-                            x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedExpense.amount)"></p>
-                    </div>
-
-                    <!-- Details Card -->
-                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-4">
-                        <div class="flex justify-between items-start border-b border-slate-100 pb-3">
-                            <div>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Tanggal</p>
-                                <p class="text-xs font-bold text-slate-800" x-text="selectedExpense.date"></p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Kategori</p>
-                                <span
-                                    class="inline-block px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-600"
-                                    x-text="selectedExpense.cat"></span>
-                            </div>
+                <template x-if="selectedExpense">
+                    <div class="space-y-6">
+                        <!-- Amount Highlight -->
+                        <div class="text-center">
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nominal</p>
+                            <p class="text-3xl font-black text-rose-500"
+                                x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedExpense.amount)"></p>
                         </div>
 
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Keterangan</p>
-                            <p class="text-sm font-medium text-slate-700 leading-relaxed" x-text="selectedExpense.desc">
-                            </p>
-                        </div>
-
-                        <!-- Creator Info -->
-                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">Dibuat Oleh</p>
-                            <div class="flex items-center gap-2">
-                                <div
-                                    class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
-                                    <span x-text="(selectedExpense.user || '?').charAt(0).toUpperCase()"></span>
+                        <!-- Details Card -->
+                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-4">
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Tanggal</p>
+                                    <p class="text-xs font-bold text-slate-800" x-text="selectedExpense.date"></p>
                                 </div>
-                                <p class="text-xs font-bold text-slate-700" x-text="selectedExpense.user || 'System'">
+                                <div class="text-right">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Kategori</p>
+                                    <span
+                                        class="inline-block px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-[10px] font-bold text-slate-600"
+                                        x-text="selectedExpense.cat"></span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Keterangan</p>
+                                <p class="text-sm font-medium text-slate-700 leading-relaxed"
+                                    x-text="selectedExpense.desc">
                                 </p>
                             </div>
+
+                            <!-- Creator Info -->
+                            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Dibuat Oleh</p>
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                        <span x-text="(selectedExpense.user || '?').charAt(0).toUpperCase()"></span>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-700"
+                                        x-text="selectedExpense.user || 'System'">
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="pt-4 mt-2 border-t border-slate-50">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Aksi
+                                Cepat</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Edit (Blue) -->
+                                <button @click="editExpense(selectedExpense); isExpenseDetailOpen = false; vibrate()"
+                                    class="flex items-center justify-center gap-2 p-3.5 bg-blue-50 text-blue-600 rounded-2xl font-bold text-xs border border-blue-100 active:scale-95 transition hover:bg-blue-100 shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <use href="#i-pencil-edit" />
+                                    </svg>
+                                    Edit Data
+                                </button>
+
+                                <!-- Delete (Red - Admin/Owner Only) -->
+                                <template x-if="currentUser.role === 'Admin' || currentUser.role === 'Owner'">
+                                    <button
+                                        @click="requestDeleteExpense(selectedExpense.id); isExpenseDetailOpen = false; vibrate()"
+                                        class="flex items-center justify-center gap-2 p-3.5 bg-rose-50 text-rose-600 rounded-2xl font-bold text-xs border border-rose-100 active:scale-95 transition hover:bg-rose-100 shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <use href="#i-trash" />
+                                        </svg>
+                                        Hapus
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="isDeleteOpen">
+        <div class="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center">
+                <div
+                    class="mx-auto w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-3 text-red-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#i-trash" />
+                    </svg>
+                </div>
+                <h3 class="font-extrabold text-slate-800">Hapus Data?</h3>
+                <div class="flex gap-2 mt-4"><button @click="isDeleteOpen=false"
+                        class="flex-1 bg-slate-100 py-3 rounded-xl text-xs font-bold text-slate-500">Batal</button><button
+                        @click="confirmDelete" :disabled="bgProcess"
+                        class="flex-1 bg-red-600 text-white py-3 rounded-xl text-xs font-bold shadow-lg disabled:opacity-50">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Delete Deposit Confirmation Modal (NEW) -->
+    <template x-if="isDeleteDepositOpen">
+        <div class="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center fade-in">
+                <div
+                    class="mx-auto w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-4 text-amber-500">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#i-exclamation" />
+                    </svg>
+                </div>
+                <h3 class="font-extrabold text-slate-800 text-lg mb-2">Hapus Setor Modal?</h3>
+                <p class="text-xs text-slate-500 mb-1 leading-relaxed">Yakin ingin menghapus data setor ini?</p>
+                <p class="text-xs font-bold text-amber-600 mb-4">Saldo akan dikembalikan ke laci</p>
+                <div class="flex gap-3 mt-4">
+                    <button @click="isDeleteDepositOpen=false"
+                        class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button>
+                    <button @click="executeDeleteDeposit" :disabled="bgProcess"
+                        class="flex-1 bg-amber-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg hover:bg-amber-700 transition disabled:opacity-50">Ya,
+                        Hapus</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="isMasterOpen">
+        <div class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl space-y-4">
+                <form @submit.prevent="submitNewProd" class="space-y-4">
+                    <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2"><span
+                            class="w-1.5 h-6 bg-brand-600 rounded-full"></span> Tambah Produk</h3><input type="text"
+                        x-model="newProd.category" list="catList"
+                        class="w-full bg-slate-50 border-0 rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
+                        placeholder="Kategori" required><datalist id="catList"><template x-for="c in categories"
+                            :key="c">
+                            <option :value="c"></option>
+                        </template></datalist><input type="text" x-model="newProd.name"
+                        class="w-full bg-slate-50 border-0 rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
+                        placeholder="Nama Produk" required>
+                    <div class="flex gap-2 pt-2"><button type="button" @click="isMasterOpen=false"
+                            class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500">Batal</button><button
+                            type="submit" :disabled="bgProcess"
+                            class="flex-1 bg-brand-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="isSetorOpen">
+        <div class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div
+                class="bg-white rounded-[2.5rem] w-full max-w-sm p-6 shadow-2xl space-y-4 text-center max-h-[85vh] overflow-y-auto no-scrollbar">
+                <h3 class="font-extrabold text-slate-800 text-lg">Setor Modal</h3>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div
+                        class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wide">
+                        <span>Saldo Laci</span><span class="text-slate-800 text-sm"
+                            x-text="isSensitiveHidden ? 'Rp *******' : fmt(modalStats.modalGantung)"></span>
+                    </div>
+                </div>
+
+                <form @submit.prevent="submitSetor" class="space-y-3">
+                    <div class="relative"><span
+                            class="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-brand-400">Rp</span><input
+                            type="tel" :value="formatRupiah(setorForm.amount)"
+                            @input="setorForm.amount = cleanRupiah($el.value); $el.value = formatRupiah($el.value)"
+                            class="w-full bg-slate-50 border-0 rounded-2xl pl-10 pr-5 py-4 text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 transition invalid:ring-2 invalid:ring-rose-500/50"
+                            placeholder="Nominal Disetor" required min="1"></div>
+                    <input type="text" x-model="setorForm.note"
+                        class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-4 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 transition"
+                        placeholder="Keterangan">
+                    <div class="flex gap-2 justify-center"><button type="button"
+                            @click="setorForm.note='Setor ke Mandiri'; vibrate()"
+                            class="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-500 active:bg-brand-50 active:border-brand-500 transition">Ke
+                            Mandiri</button><button type="button" @click="setorForm.note='Setor ke BCA'; vibrate()"
+                            class="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-500 active:bg-brand-50 active:border-brand-500 transition">Ke
+                            BCA</button></div>
+                    <div class="flex gap-2 pt-2 border-b border-slate-100 pb-4"><button type="button"
+                            @click="isSetorOpen=false"
+                            class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500">Batal</button><button
+                            type="submit" :disabled="bgProcess"
+                            class="flex-1 bg-brand-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
+                            <span x-text="bgProcess ? 'MEMPROSES...' : 'Konfirmasi'"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-left pt-2">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Riwayat Setor (Terakhir)</p>
+                    <div class="space-y-2" x-data="{ expandedDeposit: null }">
+                        <template x-for="(d, idx) in deposits" :key="d.date + idx">
+                            <div class="bg-slate-50 rounded-lg border border-slate-100 overflow-hidden">
+                                <!-- Header (Always Visible) -->
+                                <div @click="expandedDeposit = expandedDeposit === idx ? null : idx"
+                                    class="flex justify-between items-center p-2 cursor-pointer hover:bg-slate-100 transition active:scale-[0.99]">
+                                    <div class="flex-1">
+                                        <p class="text-[9px] font-bold text-slate-700" x-text="d.note"></p>
+                                        <p class="text-[8px] text-slate-400" x-text="d.date"></p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[10px] font-black text-brand-600"
+                                            x-text="isSensitiveHidden ? 'Rp *******' : fmt(d.amount)"></p>
+                                        <svg class="w-3 h-3 text-slate-400 transition-transform"
+                                            :class="{ 'rotate-180': expandedDeposit === idx }" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <use href="#i-chevron-down" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <!-- Detail (Expandable) -->
+                                <div x-show="expandedDeposit === idx" x-collapse
+                                    class="px-3 pb-3 pt-1 border-t border-slate-200 bg-white">
+                                    <div class="space-y-2">
+                                        <!-- Nominal Detail -->
+                                        <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                            <span class="text-[8px] text-slate-500 uppercase font-bold">Nominal
+                                                Disetor</span>
+                                            <span class="text-[9px] font-black text-brand-600"
+                                                x-text="isSensitiveHidden ? 'Rp *******' : fmt(d.amount)"></span>
+                                        </div>
+
+                                        <!-- Bank/Tujuan -->
+                                        <div class="flex justify-between items-center py-1.5 border-b border-slate-100"
+                                            x-show="d.bank">
+                                            <span class="text-[8px] text-slate-500 uppercase font-bold">Bank
+                                                Tujuan</span>
+                                            <span class="text-[9px] font-bold text-slate-700"
+                                                x-text="d.bank || '-'"></span>
+                                        </div>
+
+                                        <!-- Waktu Lengkap -->
+                                        <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                            <span class="text-[8px] text-slate-500 uppercase font-bold">Tanggal
+                                                Transaksi</span>
+                                            <span class="text-[9px] font-bold text-slate-700" x-text="d.date"></span>
+                                        </div>
+
+                                        <!-- Keterangan -->
+                                        <div class="py-1.5">
+                                            <p class="text-[8px] text-slate-500 uppercase font-bold mb-1">Keterangan</p>
+                                            <p class="text-[9px] text-slate-700 bg-slate-50 p-2 rounded"
+                                                x-text="d.note">
+                                            </p>
+                                        </div>
+
+                                        <!-- Status Badge -->
+                                        <div class="pt-1">
+                                            <span
+                                                class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded text-[8px] font-bold">
+                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <use href="#i-check" />
+                                                </svg>
+                                                TERCATAT
+                                            </span>
+                                        </div>
+
+                                        <!-- Actions: Edit & Delete -->
+                                        <div x-show="currentUser?.role === 'Admin' || currentUser?.role === 'Owner'"
+                                            class="pt-3 mt-3 border-t border-slate-100">
+                                            <p
+                                                class="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                                Aksi</p>
+                                            <div class="flex gap-2">
+                                                <!-- Edit Button -->
+                                                <button @click="editDeposit(d, idx); vibrate()"
+                                                    class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-blue-50 text-blue-600 rounded-lg font-bold text-[9px] border border-blue-100 active:scale-95 transition hover:bg-blue-100">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <use href="#i-pencil-edit" />
+                                                    </svg>
+                                                    Edit
+                                                </button>
+
+                                                <!-- Delete Button -->
+                                                <button @click="requestDeleteDeposit(d, idx); vibrate()"
+                                                    class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-rose-50 text-rose-600 rounded-lg font-bold text-[9px] border border-rose-100 active:scale-95 transition hover:bg-rose-100">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <use href="#i-trash" />
+                                                    </svg>
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="deposits.length === 0" class="text-center text-[9px] text-slate-300 py-2">Belum ada
+                            riwayat.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="isLogoutOpen">
+        <div class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center fade-in">
+                <div
+                    class="mx-auto w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="font-extrabold text-slate-800 text-lg">Keluar Aplikasi?</h3>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">Anda harus login ulang untuk masuk kembali ke
+                    sistem.
+                </p>
+                <div class="flex gap-3 mt-6"><button @click="isLogoutOpen=false"
+                        class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button><button
+                        @click="logout"
+                        class="flex-1 bg-red-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg hover:bg-red-700 transition">Keluar</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- FIX DB CONFIRMATION MODAL -->
+    <template x-if="isFixDBOpen">
+        <div class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center fade-in text-center">
+                <div
+                    class="mx-auto w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-4 text-amber-500">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#i-pencil-edit" />
+                    </svg>
+                </div>
+                <h3 class="font-extrabold text-slate-800 text-lg">Perbaiki Database?</h3>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">Sistem akan memindai dan memperbaiki struktur
+                    kolom yang tidak lengkap (termasuk kolom Kasir).</p>
+                <div class="flex gap-3 mt-6">
+                    <button @click="isFixDBOpen=false"
+                        class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button>
+                    <button @click="executeFixDB"
+                        class="flex-1 bg-brand-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg hover:bg-brand-700 transition">Perbaiki</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- FIX DB RESULT MODAL -->
+    <template x-if="isFixResultOpen">
+        <div class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl relative">
+                <div
+                    class="mx-auto w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-4 text-emerald-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <use href="#i-check" />
+                    </svg>
+                </div>
+                <h3 class="font-extrabold text-slate-800 text-lg text-center mb-2">Perbaikan Selesai!</h3>
+                <div
+                    class="bg-slate-50 rounded-xl p-4 max-h-40 overflow-y-auto custom-scrollbar border border-slate-100 mb-4">
+                    <p class="text-[10px] font-mono text-slate-600 whitespace-pre-wrap" x-text="fixLogs"></p>
+                </div>
+                <button @click="isFixResultOpen=false; fetch(true)"
+                    class="w-full bg-slate-800 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg">Tutup &
+                    Refresh</button>
+            </div>
+        </div>
+    </template>
+
+    <template x-if="isDetailOpen">
+        <div class="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+            <div
+                class="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="px-6 pt-6 pb-3 flex justify-between items-start">
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-xl tracking-tight flex items-center gap-2">
+                            Detail Transaksi
+                            <span class="text-[10px] px-2 py-0.5 rounded-lg border font-bold tracking-wide"
+                                :class="selectedDetail?.sisa <= 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'"
+                                x-text="selectedDetail?.sisa <= 0 ? 'LUNAS' : 'BELUM LUNAS'"></span>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5"
+                            x-text="'ID: ' + selectedDetail?.id"></p>
+                    </div>
+                    <button @click="isDetailOpen=false; vibrate()"
+                        class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 transition"><svg
+                            class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <use href="#i-x-close" />
+                        </svg></button>
+                </div>
+
+                <div class="px-6 overflow-y-auto no-scrollbar space-y-5 pb-6">
+                    <!-- Info Section: Compact Row Layout -->
+                    <div class="space-y-3">
+                        <!-- Customer & Date -->
+                        <div class="flex justify-between items-start border-b border-slate-50 pb-3">
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pelanggan
+                                </p>
+                                <p class="font-bold text-slate-800 text-sm" x-text="selectedDetail?.customer"></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Tanggal
+                                    Transaksi</p>
+                                <p class="font-bold text-slate-800 text-xs" x-text="selectedDetail?.fullDate"></p>
+                            </div>
+                        </div>
+
+                        <!-- Cashier & Deadline: 2 Column Layout -->
+                        <div class="flex gap-4">
+                            <!-- Cashier -->
+                            <div class="flex-1 flex items-center gap-2"
+                                x-show="selectedDetail?.cashier || selectedDetail?.user">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <use href="#i-user" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Petugas</p>
+                                    <p class="font-bold text-slate-700 text-[11px] truncate"
+                                        x-text="selectedDetail?.cashier || selectedDetail?.user || '-'"></p>
+                                </div>
+                            </div>
+
+                            <!-- Deadline -->
+                            <div class="flex-1 flex items-center justify-end gap-2 text-right"
+                                x-show="selectedDetail?.deadline">
+                                <div class="min-w-0">
+                                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Deadline</p>
+                                    <p class="font-bold text-[11px] text-slate-700 truncate"
+                                        x-text="fmtDeadline(selectedDetail?.deadline)"></p>
+                                </div>
+                                <div
+                                    class="w-6 h-6 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <use href="#i-calendar-alt" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Actions -->
+                    <!-- Rincian Barang -->
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Rincian Barang</p>
+                        <div x-show="loadingDetail" class="space-y-2">
+                            <div class="h-10 bg-slate-100 rounded-xl animate-pulse"></div>
+                        </div>
+                        <div x-show="!loadingDetail" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
+                            <template x-for="(item, idx) in detailItems" :key="idx">
+                                <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                    <div class="flex justify-between items-start">
+                                        <p class="text-xs font-bold text-slate-800" x-text="item.productName"></p>
+                                        <p class="text-xs font-black text-brand-600"
+                                            x-text="isSensitiveHidden ? 'Rp ***' : fmt(item.sellPrice * item.qty)"></p>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 mt-1">
+                                        <span x-text="item.qty"></span> x
+                                        <span class="text-brand-600 font-bold"
+                                            x-text="isSensitiveHidden ? 'Rp ****' : fmt(item.sellPrice)"></span>
+                                    </p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Total Summary -->
+                    <div class="bg-slate-900 rounded-2xl p-4 text-white space-y-2">
+                        <div class="flex justify-between text-xs opacity-70"><span>Total Tagihan</span><span
+                                x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.total)"></span></div>
+                        <div class="flex justify-between text-xs opacity-70"><span>Sudah Bayar (DP)</span><span
+                                class="text-green-400"
+                                x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.dp)"></span></div>
+
+                        <!-- Owner/Admin Financial Info -->
+                        <template x-if="currentUser?.role === 'Admin' || currentUser?.role === 'Owner'">
+                            <div class="space-y-2 pt-2 border-t border-white/10 mt-2">
+                                <div class="flex justify-between text-xs opacity-70">
+                                    <span>Total HPP (Barang)</span>
+                                    <span class="text-rose-400"
+                                        x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.totalHppBarang)"></span>
+                                </div>
+                                <div class="flex justify-between text-xs opacity-70"
+                                    x-show="selectedDetail?.totalTransport > 0">
+                                    <span>Biaya Transportasi</span>
+                                    <span class="text-amber-400"
+                                        x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.totalTransport)"></span>
+                                </div>
+                                <!-- Modal Akhir (Total) -->
+                                <div class="flex justify-between text-xs font-bold text-slate-300">
+                                    <span>Total Modal</span>
+                                    <span
+                                        x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.totalModal)"></span>
+                                </div>
+                                <div class="flex justify-between text-xs font-bold text-emerald-400">
+                                    <span>Laba Bersih</span>
+                                    <span
+                                        x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.labaBersih)"></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="w-full h-px bg-white/10 my-1"></div>
+                        <div class="flex justify-between font-bold text-sm"><span>Sisa Kekurangan</span><span
+                                class="text-red-400"
+                                x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.sisa)"></span></div>
+                    </div>
+
+                    <!-- ACTIONS GRID -->
                     <div class="pt-4 mt-2 border-t border-slate-50">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Aksi
-                            Cepat</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Aksi Cepat
+                        </p>
                         <div class="grid grid-cols-2 gap-3">
+                            <!-- Print Struk (Primary) -->
+                            <button @click="printReceipt(selectedDetail); vibrate()"
+                                class="flex items-center justify-center gap-2 p-3.5 bg-emerald-50 text-emerald-600 rounded-2xl font-bold text-xs border border-emerald-100 active:scale-95 transition hover:bg-emerald-100 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4v-4m0 0h9m-9 0h9m-9 0v4m-9-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
+                                </svg>
+                                Cetak Struk
+                            </button>
+
                             <!-- Edit (Blue) -->
-                            <button @click="editExpense(selectedExpense); isExpenseDetailOpen = false; vibrate()"
+                            <button @click="editItem(selectedDetail); isDetailOpen=false; vibrate()"
                                 class="flex items-center justify-center gap-2 p-3.5 bg-blue-50 text-blue-600 rounded-2xl font-bold text-xs border border-blue-100 active:scale-95 transition hover:bg-blue-100 shadow-sm">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <use href="#i-pencil-edit" />
@@ -2207,10 +2688,20 @@
                                 Edit Data
                             </button>
 
+                            <!-- Print Invoice (Secondary) -->
+                            <button @click="printInvoice(selectedDetail); vibrate()" :disabled="loadingPdf"
+                                class="flex items-center justify-center gap-2 p-3.5 bg-indigo-50 text-indigo-600 rounded-2xl font-bold text-xs border border-indigo-100 active:scale-95 transition hover:bg-indigo-100 disabled:opacity-50 shadow-sm">
+                                <svg class="w-4 h-4" x-show="!loadingPdf" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <use href="#i-document-text" />
+                                </svg>
+                                <span x-text="loadingPdf ? 'Loading...' : 'Invoice'">Invoice</span>
+                            </button>
+
                             <!-- Delete (Red - Admin/Owner Only) -->
-                            <template x-if="currentUser.role === 'Admin' || currentUser.role === 'Owner'">
+                            <template x-if="currentUser?.role === 'Admin' || currentUser?.role === 'Owner'">
                                 <button
-                                    @click="requestDeleteExpense(selectedExpense.id); isExpenseDetailOpen = false; vibrate()"
+                                    @click="requestDelete(selectedDetail?.id, selectedDetail?.isoDate); isDetailOpen=false; vibrate()"
                                     class="flex items-center justify-center gap-2 p-3.5 bg-rose-50 text-rose-600 rounded-2xl font-bold text-xs border border-rose-100 active:scale-95 transition hover:bg-rose-100 shadow-sm">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <use href="#i-trash" />
@@ -2221,475 +2712,9 @@
                         </div>
                     </div>
                 </div>
-            </template>
-        </div>
-    </div>
-
-    <div x-show="isDeleteOpen"
-        class="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6" x-cloak>
-        <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center">
-            <div class="mx-auto w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-3 text-red-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <use href="#i-trash" />
-                </svg>
-            </div>
-            <h3 class="font-extrabold text-slate-800">Hapus Data?</h3>
-            <div class="flex gap-2 mt-4"><button @click="isDeleteOpen=false"
-                    class="flex-1 bg-slate-100 py-3 rounded-xl text-xs font-bold text-slate-500">Batal</button><button
-                    @click="confirmDelete" :disabled="bgProcess"
-                    class="flex-1 bg-red-600 text-white py-3 rounded-xl text-xs font-bold shadow-lg disabled:opacity-50">Hapus</button>
             </div>
         </div>
-    </div>
-
-    <!-- Delete Deposit Confirmation Modal (NEW) -->
-    <div x-show="isDeleteDepositOpen"
-        class="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6" x-cloak>
-        <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center fade-in">
-            <div
-                class="mx-auto w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-4 text-amber-500">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <use href="#i-exclamation" />
-                </svg>
-            </div>
-            <h3 class="font-extrabold text-slate-800 text-lg mb-2">Hapus Setor Modal?</h3>
-            <p class="text-xs text-slate-500 mb-1 leading-relaxed">Yakin ingin menghapus data setor ini?</p>
-            <p class="text-xs font-bold text-amber-600 mb-4">Saldo akan dikembalikan ke laci</p>
-            <div class="flex gap-3 mt-4">
-                <button @click="isDeleteDepositOpen=false"
-                    class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button>
-                <button @click="executeDeleteDeposit" :disabled="bgProcess"
-                    class="flex-1 bg-amber-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg hover:bg-amber-700 transition disabled:opacity-50">Ya,
-                    Hapus</button>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="isMasterOpen"
-        class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6" x-cloak>
-        <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl space-y-4">
-            <form @submit.prevent="submitNewProd" class="space-y-4">
-                <h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2"><span
-                        class="w-1.5 h-6 bg-brand-600 rounded-full"></span> Tambah Produk</h3><input type="text"
-                    x-model="newProd.category" list="catList"
-                    class="w-full bg-slate-50 border-0 rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
-                    placeholder="Kategori" required><datalist id="catList"><template x-for="c in categories" :key="c">
-                        <option :value="c"></option>
-                    </template></datalist><input type="text" x-model="newProd.name"
-                    class="w-full bg-slate-50 border-0 rounded-xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 invalid:ring-2 invalid:ring-rose-500/50"
-                    placeholder="Nama Produk" required>
-                <div class="flex gap-2 pt-2"><button type="button" @click="isMasterOpen=false"
-                        class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500">Batal</button><button
-                        type="submit" :disabled="bgProcess"
-                        class="flex-1 bg-brand-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div x-show="isSetorOpen"
-        class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6" x-cloak>
-        <div
-            class="bg-white rounded-[2.5rem] w-full max-w-sm p-6 shadow-2xl space-y-4 text-center max-h-[85vh] overflow-y-auto no-scrollbar">
-            <h3 class="font-extrabold text-slate-800 text-lg">Setor Modal</h3>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wide">
-                    <span>Saldo Laci</span><span class="text-slate-800 text-sm"
-                        x-text="isSensitiveHidden ? 'Rp *******' : fmt(modalStats.modalGantung)"></span>
-                </div>
-            </div>
-
-            <form @submit.prevent="submitSetor" class="space-y-3">
-                <div class="relative"><span
-                        class="absolute left-5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-brand-400">Rp</span><input
-                        type="tel" :value="formatRupiah(setorForm.amount)"
-                        @input="setorForm.amount = cleanRupiah($el.value); $el.value = formatRupiah($el.value)"
-                        class="w-full bg-slate-50 border-0 rounded-2xl pl-10 pr-5 py-4 text-sm font-bold outline-none focus:ring-2 focus:ring-brand-500 transition invalid:ring-2 invalid:ring-rose-500/50"
-                        placeholder="Nominal Disetor" required min="1"></div>
-                <input type="text" x-model="setorForm.note"
-                    class="w-full bg-slate-50 border-0 rounded-2xl px-5 py-4 text-xs font-bold outline-none focus:ring-2 focus:ring-brand-500 transition"
-                    placeholder="Keterangan">
-                <div class="flex gap-2 justify-center"><button type="button"
-                        @click="setorForm.note='Setor ke Mandiri'; vibrate()"
-                        class="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-500 active:bg-brand-50 active:border-brand-500 transition">Ke
-                        Mandiri</button><button type="button" @click="setorForm.note='Setor ke BCA'; vibrate()"
-                        class="px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] font-bold text-slate-500 active:bg-brand-50 active:border-brand-500 transition">Ke
-                        BCA</button></div>
-                <div class="flex gap-2 pt-2 border-b border-slate-100 pb-4"><button type="button"
-                        @click="isSetorOpen=false"
-                        class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500">Batal</button><button
-                        type="submit" :disabled="bgProcess"
-                        class="flex-1 bg-brand-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg flex items-center justify-center gap-2 disabled:opacity-50">
-                        <span x-text="bgProcess ? 'MEMPROSES...' : 'Konfirmasi'"></span>
-                    </button>
-                </div>
-            </form>
-
-            <div class="text-left pt-2">
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Riwayat Setor (Terakhir)</p>
-                <div class="space-y-2" x-data="{ expandedDeposit: null }">
-                    <template x-for="(d, idx) in deposits" :key="d.date + idx">
-                        <div class="bg-slate-50 rounded-lg border border-slate-100 overflow-hidden">
-                            <!-- Header (Always Visible) -->
-                            <div @click="expandedDeposit = expandedDeposit === idx ? null : idx"
-                                class="flex justify-between items-center p-2 cursor-pointer hover:bg-slate-100 transition active:scale-[0.99]">
-                                <div class="flex-1">
-                                    <p class="text-[9px] font-bold text-slate-700" x-text="d.note"></p>
-                                    <p class="text-[8px] text-slate-400" x-text="d.date"></p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <p class="text-[10px] font-black text-brand-600"
-                                        x-text="isSensitiveHidden ? 'Rp *******' : fmt(d.amount)"></p>
-                                    <svg class="w-3 h-3 text-slate-400 transition-transform"
-                                        :class="{ 'rotate-180': expandedDeposit === idx }" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <use href="#i-chevron-down" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <!-- Detail (Expandable) -->
-                            <div x-show="expandedDeposit === idx" x-collapse
-                                class="px-3 pb-3 pt-1 border-t border-slate-200 bg-white">
-                                <div class="space-y-2">
-                                    <!-- Nominal Detail -->
-                                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
-                                        <span class="text-[8px] text-slate-500 uppercase font-bold">Nominal
-                                            Disetor</span>
-                                        <span class="text-[9px] font-black text-brand-600"
-                                            x-text="isSensitiveHidden ? 'Rp *******' : fmt(d.amount)"></span>
-                                    </div>
-
-                                    <!-- Bank/Tujuan -->
-                                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100"
-                                        x-show="d.bank">
-                                        <span class="text-[8px] text-slate-500 uppercase font-bold">Bank
-                                            Tujuan</span>
-                                        <span class="text-[9px] font-bold text-slate-700" x-text="d.bank || '-'"></span>
-                                    </div>
-
-                                    <!-- Waktu Lengkap -->
-                                    <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
-                                        <span class="text-[8px] text-slate-500 uppercase font-bold">Tanggal
-                                            Transaksi</span>
-                                        <span class="text-[9px] font-bold text-slate-700" x-text="d.date"></span>
-                                    </div>
-
-                                    <!-- Keterangan -->
-                                    <div class="py-1.5">
-                                        <p class="text-[8px] text-slate-500 uppercase font-bold mb-1">Keterangan</p>
-                                        <p class="text-[9px] text-slate-700 bg-slate-50 p-2 rounded" x-text="d.note">
-                                        </p>
-                                    </div>
-
-                                    <!-- Status Badge -->
-                                    <div class="pt-1">
-                                        <span
-                                            class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded text-[8px] font-bold">
-                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <use href="#i-check" />
-                                            </svg>
-                                            TERCATAT
-                                        </span>
-                                    </div>
-
-                                    <!-- Actions: Edit & Delete -->
-                                    <div x-show="currentUser?.role === 'Admin' || currentUser?.role === 'Owner'"
-                                        class="pt-3 mt-3 border-t border-slate-100">
-                                        <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                            Aksi</p>
-                                        <div class="flex gap-2">
-                                            <!-- Edit Button -->
-                                            <button @click="editDeposit(d, idx); vibrate()"
-                                                class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-blue-50 text-blue-600 rounded-lg font-bold text-[9px] border border-blue-100 active:scale-95 transition hover:bg-blue-100">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <use href="#i-pencil-edit" />
-                                                </svg>
-                                                Edit
-                                            </button>
-
-                                            <!-- Delete Button -->
-                                            <button @click="requestDeleteDeposit(d, idx); vibrate()"
-                                                class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-rose-50 text-rose-600 rounded-lg font-bold text-[9px] border border-rose-100 active:scale-95 transition hover:bg-rose-100">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <use href="#i-trash" />
-                                                </svg>
-                                                Hapus
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                    <div x-show="deposits.length === 0" class="text-center text-[9px] text-slate-300 py-2">Belum ada
-                        riwayat.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="isLogoutOpen"
-        class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6" x-cloak>
-        <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center fade-in">
-            <div class="mx-auto w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                    </path>
-                </svg>
-            </div>
-            <h3 class="font-extrabold text-slate-800 text-lg">Keluar Aplikasi?</h3>
-            <p class="text-xs text-slate-500 mt-2 leading-relaxed">Anda harus login ulang untuk masuk kembali ke
-                sistem.
-            </p>
-            <div class="flex gap-3 mt-6"><button @click="isLogoutOpen=false"
-                    class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button><button
-                    @click="logout"
-                    class="flex-1 bg-red-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg hover:bg-red-700 transition">Keluar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- FIX DB CONFIRMATION MODAL -->
-    <div x-show="isFixDBOpen"
-        class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6" x-cloak>
-        <div class="bg-white rounded-[2rem] w-full max-w-xs p-6 shadow-2xl text-center fade-in text-center">
-            <div
-                class="mx-auto w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-4 text-amber-500">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <use href="#i-pencil-edit" />
-                </svg>
-            </div>
-            <h3 class="font-extrabold text-slate-800 text-lg">Perbaiki Database?</h3>
-            <p class="text-xs text-slate-500 mt-2 leading-relaxed">Sistem akan memindai dan memperbaiki struktur
-                kolom yang tidak lengkap (termasuk kolom Kasir).</p>
-            <div class="flex gap-3 mt-6">
-                <button @click="isFixDBOpen=false"
-                    class="flex-1 bg-slate-100 py-3.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition">Batal</button>
-                <button @click="executeFixDB"
-                    class="flex-1 bg-brand-600 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg hover:bg-brand-700 transition">Perbaiki</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- FIX DB RESULT MODAL -->
-    <div x-show="isFixResultOpen"
-        class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-6" x-cloak>
-        <div class="bg-white rounded-[2rem] w-full max-w-sm p-6 shadow-2xl relative">
-            <div
-                class="mx-auto w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-4 text-emerald-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <use href="#i-check" />
-                </svg>
-            </div>
-            <h3 class="font-extrabold text-slate-800 text-lg text-center mb-2">Perbaikan Selesai!</h3>
-            <div
-                class="bg-slate-50 rounded-xl p-4 max-h-40 overflow-y-auto custom-scrollbar border border-slate-100 mb-4">
-                <p class="text-[10px] font-mono text-slate-600 whitespace-pre-wrap" x-text="fixLogs"></p>
-            </div>
-            <button @click="isFixResultOpen=false; fetch(true)"
-                class="w-full bg-slate-800 text-white py-3.5 rounded-xl text-xs font-bold shadow-lg">Tutup &
-                Refresh</button>
-        </div>
-    </div>
-
-    <div x-show="isDetailOpen"
-        class="fixed inset-0 z-[90] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
-        x-cloak>
-        <div class="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 pt-6 pb-3 flex justify-between items-start">
-                <div>
-                    <h3 class="font-extrabold text-slate-800 text-xl tracking-tight flex items-center gap-2">
-                        Detail Transaksi
-                        <span class="text-[10px] px-2 py-0.5 rounded-lg border font-bold tracking-wide"
-                            :class="selectedDetail?.sisa <= 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'"
-                            x-text="selectedDetail?.sisa <= 0 ? 'LUNAS' : 'BELUM LUNAS'"></span>
-                    </h3>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5"
-                        x-text="'ID: ' + selectedDetail?.id"></p>
-                </div>
-                <button @click="isDetailOpen=false; vibrate()"
-                    class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 transition"><svg
-                        class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <use href="#i-x-close" />
-                    </svg></button>
-            </div>
-
-            <div class="px-6 overflow-y-auto no-scrollbar space-y-5 pb-6">
-                <!-- Info Section: Compact Row Layout -->
-                <div class="space-y-3">
-                    <!-- Customer & Date -->
-                    <div class="flex justify-between items-start border-b border-slate-50 pb-3">
-                        <div>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pelanggan
-                            </p>
-                            <p class="font-bold text-slate-800 text-sm" x-text="selectedDetail?.customer"></p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Tanggal
-                                Transaksi</p>
-                            <p class="font-bold text-slate-800 text-xs" x-text="selectedDetail?.fullDate"></p>
-                        </div>
-                    </div>
-
-                    <!-- Cashier & Deadline: 2 Column Layout -->
-                    <div class="flex gap-4">
-                        <!-- Cashier -->
-                        <div class="flex-1 flex items-center gap-2"
-                            x-show="selectedDetail?.cashier || selectedDetail?.user">
-                            <div
-                                class="w-6 h-6 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <use href="#i-user" />
-                                </svg>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Petugas</p>
-                                <p class="font-bold text-slate-700 text-[11px] truncate"
-                                    x-text="selectedDetail?.cashier || selectedDetail?.user || '-'"></p>
-                            </div>
-                        </div>
-
-                        <!-- Deadline -->
-                        <div class="flex-1 flex items-center justify-end gap-2 text-right"
-                            x-show="selectedDetail?.deadline">
-                            <div class="min-w-0">
-                                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Deadline</p>
-                                <p class="font-bold text-[11px] text-slate-700 truncate"
-                                    x-text="fmtDeadline(selectedDetail?.deadline)"></p>
-                            </div>
-                            <div
-                                class="w-6 h-6 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <use href="#i-calendar-alt" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rincian Barang -->
-                <div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Rincian Barang</p>
-                    <div x-show="loadingDetail" class="space-y-2">
-                        <div class="h-10 bg-slate-100 rounded-xl animate-pulse"></div>
-                    </div>
-                    <div x-show="!loadingDetail" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
-                        <template x-for="(item, idx) in detailItems" :key="idx">
-                            <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                <div class="flex justify-between items-start">
-                                    <p class="text-xs font-bold text-slate-800" x-text="item.productName"></p>
-                                    <p class="text-xs font-black text-brand-600"
-                                        x-text="isSensitiveHidden ? 'Rp ***' : fmt(item.sellPrice * item.qty)"></p>
-                                </div>
-                                <p class="text-[10px] text-slate-400 mt-1">
-                                    <span x-text="item.qty"></span> x
-                                    <span class="text-brand-600 font-bold"
-                                        x-text="isSensitiveHidden ? 'Rp ****' : fmt(item.sellPrice)"></span>
-                                </p>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Total Summary -->
-                <div class="bg-slate-900 rounded-2xl p-4 text-white space-y-2">
-                    <div class="flex justify-between text-xs opacity-70"><span>Total Tagihan</span><span
-                            x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.total)"></span></div>
-                    <div class="flex justify-between text-xs opacity-70"><span>Sudah Bayar (DP)</span><span
-                            class="text-green-400"
-                            x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.dp)"></span></div>
-
-                    <!-- Owner/Admin Financial Info -->
-                    <template x-if="currentUser?.role === 'Admin' || currentUser?.role === 'Owner'">
-                        <div class="space-y-2 pt-2 border-t border-white/10 mt-2">
-                            <div class="flex justify-between text-xs opacity-70">
-                                <span>Total HPP (Barang)</span>
-                                <span class="text-rose-400"
-                                    x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.totalHppBarang)"></span>
-                            </div>
-                            <div class="flex justify-between text-xs opacity-70"
-                                x-show="selectedDetail?.totalTransport > 0">
-                                <span>Biaya Transportasi</span>
-                                <span class="text-amber-400"
-                                    x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.totalTransport)"></span>
-                            </div>
-                            <!-- Modal Akhir (Total) -->
-                            <div class="flex justify-between text-xs font-bold text-slate-300">
-                                <span>Total Modal</span>
-                                <span
-                                    x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.totalModal)"></span>
-                            </div>
-                            <div class="flex justify-between text-xs font-bold text-emerald-400">
-                                <span>Laba Bersih</span>
-                                <span
-                                    x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.labaBersih)"></span>
-                            </div>
-                        </div>
-                    </template>
-
-                    <div class="w-full h-px bg-white/10 my-1"></div>
-                    <div class="flex justify-between font-bold text-sm"><span>Sisa Kekurangan</span><span
-                            class="text-red-400"
-                            x-text="isSensitiveHidden ? 'Rp *******' : fmt(selectedDetail?.sisa)"></span></div>
-                </div>
-
-                <!-- ACTIONS GRID -->
-                <div class="pt-4 mt-2 border-t border-slate-50">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Aksi Cepat
-                    </p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- Print Struk (Primary) -->
-                        <button @click="printReceipt(selectedDetail); vibrate()"
-                            class="flex items-center justify-center gap-2 p-3.5 bg-emerald-50 text-emerald-600 rounded-2xl font-bold text-xs border border-emerald-100 active:scale-95 transition hover:bg-emerald-100 shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4v-4m0 0h9m-9 0h9m-9 0v4m-9-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                                </path>
-                            </svg>
-                            Cetak Struk
-                        </button>
-
-                        <!-- Edit (Blue) -->
-                        <button @click="editItem(selectedDetail); isDetailOpen=false; vibrate()"
-                            class="flex items-center justify-center gap-2 p-3.5 bg-blue-50 text-blue-600 rounded-2xl font-bold text-xs border border-blue-100 active:scale-95 transition hover:bg-blue-100 shadow-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <use href="#i-pencil-edit" />
-                            </svg>
-                            Edit Data
-                        </button>
-
-                        <!-- Print Invoice (Secondary) -->
-                        <button @click="printInvoice(selectedDetail); vibrate()" :disabled="loadingPdf"
-                            class="flex items-center justify-center gap-2 p-3.5 bg-slate-50 text-slate-600 rounded-2xl font-bold text-xs border border-slate-100 active:scale-95 transition hover:bg-slate-100 disabled:opacity-50 shadow-sm">
-                            <svg class="w-4 h-4" x-show="!loadingPdf" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <use href="#i-document-text" />
-                            </svg>
-                            <span x-text="loadingPdf ? 'Loading...' : 'Invoice'">Invoice</span>
-                        </button>
-
-                        <!-- Delete (Red - Admin/Owner Only) -->
-                        <template x-if="currentUser?.role === 'Admin' || currentUser?.role === 'Owner'">
-                            <button
-                                @click="requestDelete(selectedDetail?.id, selectedDetail?.isoDate); isDetailOpen=false; vibrate()"
-                                class="flex items-center justify-center gap-2 p-3.5 bg-rose-50 text-rose-600 rounded-2xl font-bold text-xs border border-rose-100 active:scale-95 transition hover:bg-rose-100 shadow-sm">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <use href="#i-trash" />
-                                </svg>
-                                Hapus
-                            </button>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
+    </template>
     <!-- Offline Status Indicator -->
     <div id="offline-indicator"
         class="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 text-[10px] font-bold uppercase tracking-widest transform -translate-y-full transition-transform duration-500 ease-out shadow-lg"

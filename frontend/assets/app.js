@@ -1,6 +1,8 @@
 ﻿// === SHARED CONSTANTS (Avoid duplication across methods) ===
 const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const _fmtCache = new Map(); // Global cache for formatRupiah to prevent re-computation in x-for
+
 function _fmtDateISO(d) {
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -608,15 +610,9 @@ function app() {
         },
         get filteredHistory() {
             // Performance Optimization: Cache result based on history and filter state
-            const filterKey = JSON.stringify([
-                this.history, // Array reference check (replaced on fetch)
-                this.searchQuery,
-                this.filterStartDate,
-                this.filterEndDate,
-                this.filterStatus
-            ]);
+            const filterKey = `${this.searchQuery}|${this.filterStartDate}|${this.filterEndDate}|${this.filterStatus}`;
 
-            if (this._lastFilterKey === filterKey && this._cachedFilteredHistory) {
+            if (this._lastFilterKey === filterKey && this._cachedHistoryForFilter === this.history && this._cachedFilteredHistory) {
                 return this._cachedFilteredHistory;
             }
 
@@ -644,6 +640,7 @@ function app() {
             });
 
             this._lastFilterKey = filterKey;
+            this._cachedHistoryForFilter = this.history;
             this._cachedFilteredHistory = result;
             return result;
         },
@@ -655,8 +652,8 @@ function app() {
             const filtered = this.filteredHistory;
 
             // Performance Optimization: Cache result
-            const kpiKey = JSON.stringify([filtered]);
-            if (this._lastKPIFilterKey === kpiKey && this._cachedFilteredKPI) {
+            // Use array reference check instead of stringifying the entire array
+            if (this._cachedFilteredHistoryRef === filtered && this._cachedFilteredKPI) {
                 return this._cachedFilteredKPI;
             }
 
@@ -676,7 +673,7 @@ function app() {
                 }
             });
 
-            this._lastKPIFilterKey = kpiKey;
+            this._cachedFilteredHistoryRef = filtered;
             this._cachedFilteredKPI = kpi;
             return kpi;
         },
@@ -755,8 +752,12 @@ function app() {
             });
         },
         get groupedExpenses() {
-            const groups = {};
+            // Performance Optimization: Cache result based on expenses array
+            if (this._cachedExpensesForGroup === this.filteredExpenses && this._cachedGroupedExpenses) {
+                return this._cachedGroupedExpenses;
+            }
 
+            const groups = {};
             let itemsCount = 0;
             this.filteredExpenses.forEach(ex => {
                 if (!ex.isoDate) return;
@@ -783,20 +784,30 @@ function app() {
             });
 
             // Convert to array and sort DESCENDING by date (Newest Month first)
-            return Object.values(groups).sort((a, b) => b.sortKey - a.sortKey);
+            const result = Object.values(groups).sort((a, b) => b.sortKey - a.sortKey);
+
+            this._cachedExpensesForGroup = this.filteredExpenses;
+            this._cachedGroupedExpenses = result;
+            return result;
         },
         get filteredExpenseTotal() {
             return this.filteredExpenses.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
         },
         get expenseKPIs() {
             const filtered = this.filteredExpenses;
+
+            // Performance Optimization: Cache result based on filtered expenses array
+            if (this._cachedExpensesForKPI === filtered && this._cachedExpenseKPIs) {
+                return this._cachedExpenseKPIs;
+            }
+
             const total = filtered.reduce((acc, e) => acc + (parseFloat(e.amount) || 0), 0);
             const count = filtered.length;
 
             // Hitung kategori terboros
             const catMap = {};
             filtered.forEach(e => {
-                const cat = e.cat || 'Lainnya';
+                const cat = e.category || e.cat || 'Lainnya'; // Fallback to handle mapped data safely
                 if (!catMap[cat]) catMap[cat] = 0;
                 catMap[cat] += parseFloat(e.amount) || 0;
             });
@@ -810,7 +821,10 @@ function app() {
                 }
             }
 
-            return { total, count, topCat };
+            const result = { total, count, topCat };
+            this._cachedExpensesForKPI = filtered;
+            this._cachedExpenseKPIs = result;
+            return result;
         },
         get cartTotal() { return this.cart.reduce((acc, item) => acc + (item.qty * item.sellPrice), 0); },
 
@@ -916,7 +930,11 @@ function app() {
         // Helper for view (fmt)
         fmt(val) {
             if (!val && val !== 0) return 'Rp 0';
-            return 'Rp ' + this.formatRupiah(val);
+            if (_fmtCache.has(val)) return _fmtCache.get(val);
+            const res = 'Rp ' + this.formatRupiah(val);
+            if (_fmtCache.size > 2000) _fmtCache.clear(); // max cache size
+            _fmtCache.set(val, res);
+            return res;
         },
 
         // Helper: Format deadline ISO date to "Hari, D MMMM YYYY"
@@ -1028,7 +1046,7 @@ function app() {
                 // Uses recoveredCapital calculated earlier
                 if (this.modalStats) {
                     this.modalStats.modalGantung = (this.modalStats.modalGantung || 0) + recoveredCapital;
-                    this.modalStats.totalHPP = (this.modalStats.totalHPP || 0) + totalModal;
+                    this.modalStats.totalHPP = (this.modalStats.totalHPP || 0) + (totalModal + totalTransFee);
                 }
 
                 // 4. Update Top Product (Simple check)
@@ -1504,25 +1522,81 @@ function app() {
         async submitSetor() {
             if (!this.setorForm.amount) return this.notify("Isi nominal", "error");
             this.bgProcess = true;
-            try {
-                // BUG FIX: Route to updateDeposit if editIndex exists
-                const action = (this.setorForm.editIndex !== undefined && this.setorForm.editIndex !== null)
-                    ? 'updateDeposit'
-                    : 'saveDeposit';
 
-                const res = await this.api(action, this.setorForm);
+            const action = (this.setorForm.editIndex !== undefined && this.setorForm.editIndex !== null)
+                ? 'updateDeposit'
+                : 'saveDeposit';
+
+            const isNew = action === 'saveDeposit';
+            const now = new Date();
+            const optimisticData = {
+                id: this.setorForm.id || this.generateUUID(),
+                amount: parseFloat(this.setorForm.amount),
+                note: this.setorForm.note,
+                bank: this.setorForm.bank,
+                timestamp: now.toISOString(),
+                date: now.toLocaleDateString('id-ID')
+            };
+
+            let backupDeposit = null;
+            if (isNew) {
+                this.deposits.unshift(optimisticData);
+                this.modalStats.totalDisetor += optimisticData.amount;
+                this.modalStats.modalGantung -= optimisticData.amount;
+            } else {
+                const idx = this.deposits.findIndex(d => d.id === this.setorForm.id);
+                if (idx !== -1) {
+                    backupDeposit = JSON.parse(JSON.stringify(this.deposits[idx]));
+                    const diff = optimisticData.amount - backupDeposit.amount;
+                    this.deposits[idx] = optimisticData;
+                    this.modalStats.totalDisetor += diff;
+                    this.modalStats.modalGantung -= diff;
+                }
+            }
+
+            const originalForm = { ...this.setorForm };
+            this.isSetorOpen = false;
+            this.setorForm = { amount: '', note: '', bank: 'Mandiri' };
+            this.bgProcess = false; // Release UI immediately
+
+            try {
+                const res = await this.api(action, originalForm);
                 if (res && res.success) {
-                    this.notify(action === 'updateDeposit' ? "Update modal berhasil" : "Setor modal berhasil", "success");
-                    this.isSetorOpen = false;
-                    this.setorForm = { amount: '', note: '', bank: 'Mandiri' };
-                    this.fetch();
+                    this.notify(isNew ? "Setor modal berhasil" : "Update modal berhasil", "success");
+                    this.fetch(false, true); // Silent refresh to ensure sync
                 } else {
+                    // Rollback
+                    if (isNew) {
+                        this.deposits = this.deposits.filter(d => d.id !== optimisticData.id);
+                        this.modalStats.totalDisetor -= optimisticData.amount;
+                        this.modalStats.modalGantung += optimisticData.amount;
+                    } else if (backupDeposit) {
+                        const idx = this.deposits.findIndex(d => d.id === optimisticData.id);
+                        if (idx !== -1) {
+                            this.deposits[idx] = backupDeposit;
+                            const diff = optimisticData.amount - backupDeposit.amount;
+                            this.modalStats.totalDisetor -= diff;
+                            this.modalStats.modalGantung += diff;
+                        }
+                    }
                     this.notify("Gagal: " + (res?.message || 'Error'), "error");
                 }
             } catch (e) {
+                // Rollback
+                if (isNew) {
+                    this.deposits = this.deposits.filter(d => d.id !== optimisticData.id);
+                    this.modalStats.totalDisetor -= optimisticData.amount;
+                    this.modalStats.modalGantung += optimisticData.amount;
+                } else if (backupDeposit) {
+                    const idx = this.deposits.findIndex(d => d.id === optimisticData.id);
+                    if (idx !== -1) {
+                        this.deposits[idx] = backupDeposit;
+                        const diff = optimisticData.amount - backupDeposit.amount;
+                        this.modalStats.totalDisetor -= diff;
+                        this.modalStats.modalGantung += diff;
+                    }
+                }
                 this.notify("Error: " + e.message, 'error');
-            } finally {
-                this.bgProcess = false;
             }
         },
         // Edit Deposit Logic
@@ -1552,20 +1626,42 @@ function app() {
         // EXECUTE DELETE DEPOSIT (Called from Modal)
         async executeDeleteDeposit() {
             this.bgProcess = true;
+            this.isDeleteDepositOpen = false;
+
+            // Optimistic Delete
+            const deletedItem = this.deposits.find(d => d.index === this.deleteDepositIndex && d.date === this.deleteDepositDate);
+            let backupData = null;
+            if (deletedItem) {
+                backupData = JSON.parse(JSON.stringify(deletedItem));
+                this.deposits = this.deposits.filter(d => !(d.index === this.deleteDepositIndex && d.date === this.deleteDepositDate));
+                this.modalStats.totalDisetor -= deletedItem.amount;
+                this.modalStats.modalGantung += deletedItem.amount;
+            }
+
+            this.bgProcess = false; // Release UI
 
             try {
                 const res = await this.api('deleteDeposit', { index: this.deleteDepositIndex, date: this.deleteDepositDate });
                 if (res && res.success) {
                     this.notify("Data setor dihapus", "success");
-                    this.isDeleteDepositOpen = false; // Close strictly on success
-                    this.fetch();
+                    this.fetch(false, true); // silent refresh
                 } else {
+                    // Rollback
+                    if (backupData) {
+                        this.deposits.unshift(backupData); // Put back
+                        this.modalStats.totalDisetor += backupData.amount;
+                        this.modalStats.modalGantung -= backupData.amount;
+                    }
                     this.notify(res?.message || "Gagal hapus", "error");
                 }
             } catch (e) {
+                // Rollback
+                if (backupData) {
+                    this.deposits.unshift(backupData);
+                    this.modalStats.totalDisetor += backupData.amount;
+                    this.modalStats.modalGantung -= backupData.amount;
+                }
                 this.notify("Error: " + e.message, 'error');
-            } finally {
-                this.bgProcess = false;
             }
         },
 
