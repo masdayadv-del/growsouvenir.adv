@@ -1,6 +1,6 @@
 // === GLOBAL CONSTANTS ===
 // IMPORTANT: This URL MUST be the "Web App URL" from your Google Apps Script Deployment
-const API_URL = "https://script.google.com/macros/s/AKfycbzV1crsJVD0kT7T6vtunmqINxWkJuf8rguX14iA5wv-ozuKS-vky6HFw0yLAG_nnjaB/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxUF9jPtNX9skS-5O4sO80oJBVWEiw1H3batQ-72O574hqEVA1HZ2EAOqG7CO9Ibw_YdA/exec";
 const ENCRYPTION_KEY = "GROW_2026_SECRET_KEY_XYZ"; // Change this in production!
 
 // === ENCRYPTION HELPERS ===
