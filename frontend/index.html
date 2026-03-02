@@ -76,10 +76,9 @@
 <body class="h-screen flex flex-col text-slate-800 overflow-hidden bg-white selection:bg-brand-100" x-data="app()"
     x-init="init()">
 
-    <!-- Top Barline Loader (Profil Lebih Ramping) -->
-    <div x-show="loading || bgProcess || loadingData || loadingPdf || isSearchingServer || loadingLogs || loadingDetail || syncInProgress"
-        x-cloak class="fixed top-0 left-0 w-full z-[9999] overflow-hidden bg-brand-100/30"
-        style="height: 3px; padding-top: env(safe-area-inset-top, 0px);">
+    <!-- Top Barline Loader (Optimasi: 2px & Hanya Refresh) -->
+    <div x-show="loading" x-cloak class="fixed top-0 left-0 w-full z-[9999] overflow-hidden bg-brand-100/20"
+        style="height: 2px; padding-top: env(safe-area-inset-top, 0px);">
         <div class="h-full bg-brand-600 shadow-[0_0_4px_rgba(79,70,229,0.3)]"
             style="width: 100%; animation: indeterminateBar 1.5s infinite linear; transform-origin: 0% 50%;"></div>
     </div>
